@@ -100,7 +100,9 @@ const Navbar = () => {
               <img src={displayAvatar} alt="avatar" className="nav-avatar" />
               <div className="user-info">
                 <div className="user-name-row">
-                  <span className="user-name">{displayName}</span>
+                  <Link to={`/members/${user.id}`} className="user-name-link">
+                    <span className="user-name">{displayName}</span>
+                  </Link>
                   {isAdmin && (
                     <span className="role-badge admin">Admin</span>
                   )}
@@ -262,6 +264,15 @@ const Navbar = () => {
         .user-name {
           font-size: 0.875rem;
           font-weight: 600;
+          color: inherit;
+        }
+        .user-name-link {
+          text-decoration: none;
+          color: var(--text-primary);
+          transition: color 0.2s;
+        }
+        .user-name-link:hover {
+          color: var(--primary);
         }
         .role-badge {
           font-size: 0.65rem;

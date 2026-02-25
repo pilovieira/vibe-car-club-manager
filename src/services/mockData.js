@@ -1,24 +1,44 @@
-import { storageService } from './storageService';
+import { db } from '../firebase/config';
+import {
+    collection,
+    getDocs,
+    getDoc,
+    doc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    query,
+    where,
+    setDoc,
+    orderBy
+} from 'firebase/firestore';
 
 export const mockService = {
     // Members
     getMembers: async () => {
-        const data = storageService.getMembers();
-        return data.map(member => ({
-            ...member,
-            joinDate: member.join_date,
-            dateBirth: member.date_birth,
-            avatar: member.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.username}`
-        }));
+        const membersRef = collection(db, 'members');
+        const querySnapshot = await getDocs(membersRef);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                id: doc.id,
+                joinDate: data.join_date,
+                dateBirth: data.date_birth,
+                avatar: data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.username}`
+            };
+        });
     },
 
     getMemberById: async (id) => {
-        const members = storageService.getMembers();
-        const data = members.find(m => m.id === id);
-        if (!data) return null;
+        const docRef = doc(db, 'members', id);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) return null;
 
+        const data = docSnap.data();
         return {
             ...data,
+            id: docSnap.id,
             joinDate: data.join_date,
             dateBirth: data.date_birth,
             avatar: data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.username}`
@@ -29,7 +49,7 @@ export const mockService = {
         const memberToInsert = {
             ...member,
             join_date: member.joinDate || new Date().toISOString(),
-            date_birth: member.dateBirth,
+            date_birth: member.dateBirth || null,
             role: member.role || 'member',
             status: member.status || 'active',
             avatar: member.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.username || Date.now()}`
@@ -37,11 +57,20 @@ export const mockService = {
         delete memberToInsert.joinDate;
         delete memberToInsert.dateBirth;
 
-        const created = storageService.addItem('vibe_members', memberToInsert);
+        let docRef;
+        if (member.id) {
+            docRef = doc(db, 'members', member.id);
+            await setDoc(docRef, memberToInsert);
+        } else {
+            docRef = await addDoc(collection(db, 'members'), memberToInsert);
+        }
+
+        const created = await getDoc(docRef);
         return {
-            ...created,
-            joinDate: created.join_date,
-            dateBirth: created.date_birth
+            ...created.data(),
+            id: docRef.id,
+            joinDate: created.data().join_date,
+            dateBirth: created.data().date_birth
         };
     },
 
@@ -56,35 +85,54 @@ export const mockService = {
             delete memberToUpdate.dateBirth;
         }
 
-        const updated = storageService.updateItem('vibe_members', id, memberToUpdate);
+        const docRef = doc(db, 'members', id);
+        await updateDoc(docRef, memberToUpdate);
+
+        const updated = await getDoc(docRef);
         return {
-            ...updated,
-            joinDate: updated.join_date,
-            dateBirth: updated.date_birth
+            ...updated.data(),
+            id: id,
+            joinDate: updated.data().join_date,
+            dateBirth: updated.data().date_birth
         };
     },
 
     updateMemberStatus: async (memberId, status) => {
-        const members = storageService.getMembers();
-        const member = members.find(m => m.id === memberId);
-        if (member && member.role === 'admin' && status === 'inactive') {
-            throw new Error('error.adminInactivation');
+        const memberDoc = await getDoc(doc(db, 'members', memberId));
+        if (memberDoc.exists()) {
+            const memberData = memberDoc.data();
+            if (memberData.role === 'admin' && status === 'inactive') {
+                throw new Error('error.adminInactivation');
+            }
         }
-
-        return storageService.updateItem('vibe_members', memberId, { status });
+        const docRef = doc(db, 'members', memberId);
+        await updateDoc(docRef, { status });
+        return { id: memberId, status };
     },
-
 
     // Events
     getEvents: async () => {
-        const events = storageService.getEvents();
-        const attendees = storageService.getAttendees();
+        const eventsRef = collection(db, 'events');
+        const querySnapshot = await getDocs(eventsRef);
 
-        return events.map(event => ({
-            ...event,
-            eventType: event.event_type,
-            attendees: attendees.filter(a => a.event_id === event.id).map(a => a.member_id)
+        const events = await Promise.all(querySnapshot.docs.map(async (eventDoc) => {
+            const eventData = eventDoc.data();
+
+            // Fetch attendees for this event
+            const attendeesRef = collection(db, 'event_attendees');
+            const q = query(attendeesRef, where('event_id', '==', eventDoc.id));
+            const attendeesSnapshot = await getDocs(q);
+            const attendees = attendeesSnapshot.docs.map(doc => doc.data().member_id);
+
+            return {
+                ...eventData,
+                id: eventDoc.id,
+                eventType: eventData.event_type,
+                attendees: attendees
+            };
         }));
+
+        return events;
     },
 
     createEvent: async (event) => {
@@ -94,8 +142,9 @@ export const mockService = {
             delete eventToInsert.eventType;
         }
 
-        const created = storageService.addItem('vibe_events', eventToInsert);
-        return { ...created, attendees: [] };
+        const docRef = await addDoc(collection(db, 'events'), eventToInsert);
+        const created = await getDoc(docRef);
+        return { ...created.data(), id: docRef.id, attendees: [] };
     },
 
     updateEvent: async (eventId, event) => {
@@ -105,31 +154,46 @@ export const mockService = {
             delete eventToUpdate.eventType;
         }
 
-        return storageService.updateItem('vibe_events', eventId, eventToUpdate);
+        const docRef = doc(db, 'events', eventId);
+        await updateDoc(docRef, eventToUpdate);
+        const updated = await getDoc(docRef);
+        return { ...updated.data(), id: eventId };
     },
 
     joinEvent: async (eventId, memberId) => {
-        const attendees = storageService.getAttendees();
-        if (!attendees.find(a => a.event_id === eventId && a.member_id === memberId)) {
-            storageService.addItem('vibe_event_attendees', { event_id: eventId, member_id: memberId });
+        const attendeesRef = collection(db, 'event_attendees');
+        const q = query(attendeesRef, where('event_id', '==', eventId), where('member_id', '==', memberId));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            await addDoc(collection(db, 'event_attendees'), { event_id: eventId, member_id: memberId });
         }
+
         return this.getEvents().then(events => events.find(e => e.id === eventId));
     },
 
     leaveEvent: async (eventId, memberId) => {
-        const attendees = storageService.getAttendees();
-        const filtered = attendees.filter(a => !(a.event_id === eventId && a.member_id === memberId));
-        storageService.saveAttendees(filtered);
+        const attendeesRef = collection(db, 'event_attendees');
+        const q = query(attendeesRef, where('event_id', '==', eventId), where('member_id', '==', memberId));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            await deleteDoc(doc(db, 'event_attendees', querySnapshot.docs[0].id));
+        }
+
         return this.getEvents().then(events => events.find(e => e.id === eventId));
     },
 
     getAllContributions: async () => {
-        return storageService.getItems('vibe_contributions');
+        const q = query(collection(db, 'contributions'), orderBy('date', 'desc'));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
     },
 
     getMemberContributions: async (memberId) => {
-        const all = storageService.getItems('vibe_contributions');
-        return all.filter(c => (c.member_id === memberId || c.memberId === memberId));
+        const q = query(collection(db, 'contributions'), where('member_id', '==', memberId), orderBy('date', 'desc'));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
     },
 
     addContribution: async (contribution) => {
@@ -138,17 +202,23 @@ export const mockService = {
             member_id: contribution.member_id || contribution.memberId
         };
         delete item.memberId;
-        return storageService.addItem('vibe_contributions', item);
+        const docRef = await addDoc(collection(db, 'contributions'), item);
+        const created = await getDoc(docRef);
+        return { ...created.data(), id: docRef.id };
     },
 
     getExpenses: async () => {
-        return storageService.getItems('vibe_expenses');
+        const q = query(collection(db, 'expenses'), orderBy('date', 'desc'));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
     },
 
     addExpense: async (expense) => {
-        return storageService.addItem('vibe_expenses', expense);
+        const docRef = await addDoc(collection(db, 'expenses'), expense);
+        const created = await getDoc(docRef);
+        return { ...created.data(), id: docRef.id };
     }
-
 };
+
 
 

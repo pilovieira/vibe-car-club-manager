@@ -8,11 +8,8 @@ const AdminCreateMember = () => {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        name: '',
         email: '',
-        username: '',
         password: '',
-        role: 'member'
     });
 
     const [loading, setLoading] = useState(false);
@@ -26,19 +23,12 @@ const AdminCreateMember = () => {
         setSuccess('');
 
         try {
-            await authService.createUser(formData.email, formData.password, {
-                username: formData.username.trim(),
-                name: formData.name.trim(),
-                role: formData.role
-            });
+            await authService.createUser(formData.email, formData.password);
 
             setSuccess(t('members.memberCreated') || 'User created successfully!');
             setFormData({
-                name: '',
                 email: '',
-                username: '',
                 password: '',
-                role: 'member'
             });
 
             // Optional: redirect after some time
@@ -58,18 +48,7 @@ const AdminCreateMember = () => {
                 {error && <div className="error-message">{error}</div>}
                 {success && <div className="success-message">{success}</div>}
 
-                <form onSubmit={handleSubmit} className="form-grid">
-                    <div className="form-group">
-                        <label>{t('member.name')}</label>
-                        <input
-                            type="text"
-                            className="input-field"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            required
-                        />
-                    </div>
-
+                <form onSubmit={handleSubmit} className="form-vertical">
                     <div className="form-group">
                         <label>{t('login.email')}</label>
                         <input
@@ -77,17 +56,6 @@ const AdminCreateMember = () => {
                             className="input-field"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>{t('member.username')}</label>
-                        <input
-                            type="text"
-                            className="input-field"
-                            value={formData.username}
-                            onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/\s/g, '') })}
                             required
                         />
                     </div>
@@ -103,18 +71,6 @@ const AdminCreateMember = () => {
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label>{t('member.role') || 'Role'}</label>
-                        <select
-                            className="input-field"
-                            value={formData.role}
-                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                        >
-                            <option value="member">{t('role.member') || 'Member'}</option>
-                            <option value="admin">{t('role.admin') || 'Admin'}</option>
-                        </select>
-                    </div>
-
                     <div className="form-actions">
                         <button type="button" className="btn btn-outline" onClick={() => navigate('/admin')}>
                             {t('common.cancel')}
@@ -125,6 +81,7 @@ const AdminCreateMember = () => {
                     </div>
                 </form>
             </div>
+
 
             <style>{`
                 .create-member-page {
@@ -142,9 +99,9 @@ const AdminCreateMember = () => {
                     margin-bottom: 2rem;
                     color: var(--primary);
                 }
-                .form-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
+                .form-vertical {
+                    display: flex;
+                    flex-direction: column;
                     gap: 1.5rem;
                 }
                 .form-group {
@@ -153,7 +110,6 @@ const AdminCreateMember = () => {
                     gap: 0.5rem;
                 }
                 .form-actions {
-                    grid-column: span 2;
                     display: flex;
                     justify-content: flex-end;
                     gap: 1rem;

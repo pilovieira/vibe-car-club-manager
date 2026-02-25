@@ -16,25 +16,10 @@ const AdminGlobalBalance = () => {
         return <div className="container" style={{ paddingTop: '2rem' }}>{t('common.loading')}...</div>;
     }
 
-    if (!isAdmin) {
-        return (
-            <div className="container" style={{ paddingTop: '2rem' }}>
-                <div className="card error-card">
-                    <h1>{t('admin.accessDenied')}</h1>
-                    <p>{t('admin.accessDeniedMsg')}</p>
-                    <Link to="/" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>{t('admin.goHome')}</Link>
-                </div>
-                <style>{`
-                    .error-card { text-align: center; border-color: var(--danger); padding: 2rem; }
-                `}</style>
-            </div>
-        );
-    }
 
     useEffect(() => {
-        if (!isAdmin) return;
         loadTransactions();
-    }, [isAdmin]);
+    }, []);
 
     useEffect(() => {
         filterTransactions();
@@ -44,7 +29,7 @@ const AdminGlobalBalance = () => {
         try {
             const contributionsRaw = await mockService.getAllContributions();
             const contributions = await Promise.all(contributionsRaw.map(async (c) => {
-                const member = await mockService.getMemberById(c.memberId);
+                const member = await mockService.getMemberById(c.member_id || c.memberId);
                 return {
                     ...c,
                     type: 'income',
@@ -98,7 +83,6 @@ const AdminGlobalBalance = () => {
         addExpenseAsync();
     };
 
-    if (!isAdmin) return <div className="container">Access Denied</div>;
 
     return (
         <div className="container global-balance-page">
@@ -147,45 +131,51 @@ const AdminGlobalBalance = () => {
                 </div>
 
                 <div className="add-expense-section">
-                    <div className="card expense-form-card">
-                        <h3>Add Consumption / Expense</h3>
-                        <form onSubmit={handleAddExpense}>
-                            <div className="form-group">
-                                <label>Description</label>
-                                <input
-                                    className="input-field"
-                                    value={newExpense.description}
-                                    onChange={e => setNewExpense({ ...newExpense, description: e.target.value })}
-                                    placeholder="e.g. Event Snacks"
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Amount ($)</label>
-                                <input
-                                    type="number"
-                                    className="input-field"
-                                    value={newExpense.amount}
-                                    onChange={e => setNewExpense({ ...newExpense, amount: e.target.value })}
-                                    placeholder="0.00"
-                                    min="0"
-                                    step="0.01"
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Date</label>
-                                <input
-                                    type="date"
-                                    className="input-field"
-                                    value={newExpense.date}
-                                    onChange={e => setNewExpense({ ...newExpense, date: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <button type="submit" className="btn btn-danger-outline full-width">Record Expense</button>
-                        </form>
-                    </div>
+                    {isAdmin ? (
+                        <div className="card expense-form-card">
+                            <h3>Add Consumption / Expense</h3>
+                            <form onSubmit={handleAddExpense}>
+                                <div className="form-group">
+                                    <label>Description</label>
+                                    <input
+                                        className="input-field"
+                                        value={newExpense.description}
+                                        onChange={e => setNewExpense({ ...newExpense, description: e.target.value })}
+                                        placeholder="e.g. Event Snacks"
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Amount ($)</label>
+                                    <input
+                                        type="number"
+                                        className="input-field"
+                                        value={newExpense.amount}
+                                        onChange={e => setNewExpense({ ...newExpense, amount: e.target.value })}
+                                        placeholder="0.00"
+                                        min="0"
+                                        step="0.01"
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Date</label>
+                                    <input
+                                        type="date"
+                                        className="input-field"
+                                        value={newExpense.date}
+                                        onChange={e => setNewExpense({ ...newExpense, date: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <button type="submit" className="btn btn-danger-outline full-width">Record Expense</button>
+                            </form>
+                        </div>
+                    ) : (
+                        <div className="card text-center text-secondary">
+                            <p>Log in to record expenses</p>
+                        </div>
+                    )}
                 </div>
             </div>
 

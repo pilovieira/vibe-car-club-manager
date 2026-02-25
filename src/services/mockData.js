@@ -1,38 +1,27 @@
-import { supabase } from '../supabaseClient';
+import { storageService } from './storageService';
 
-// We keep the export name as mockService for compatibility with existing components
-// but it now talks to real Supabase tables.
 export const mockService = {
     // Members
     getMembers: async () => {
-        const { data, error } = await supabase
-            .from('members')
-            .select('*')
-            .order('name');
-        if (error) throw error;
-
+        const data = storageService.getMembers();
         return data.map(member => ({
             ...member,
             joinDate: member.join_date,
             dateBirth: member.date_birth,
-            avatar: member.avatar || 'https://via.placeholder.com/150?text=Member'
+            avatar: member.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.username}`
         }));
     },
 
     getMemberById: async (id) => {
-        const { data, error } = await supabase
-            .from('members')
-            .select('*')
-            .eq('id', id)
-            .single();
-        if (error) throw error;
+        const members = storageService.getMembers();
+        const data = members.find(m => m.id === id);
         if (!data) return null;
 
         return {
             ...data,
             joinDate: data.join_date,
             dateBirth: data.date_birth,
-            avatar: data.avatar || 'https://via.placeholder.com/150?text=Member'
+            avatar: data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.username}`
         };
     },
 
@@ -42,24 +31,17 @@ export const mockService = {
             join_date: member.joinDate || new Date().toISOString(),
             date_birth: member.dateBirth,
             role: member.role || 'member',
-            status: member.status || 'active'
+            status: member.status || 'active',
+            avatar: member.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.username || Date.now()}`
         };
-        // Remove camelCase fields that don't exist in DB
         delete memberToInsert.joinDate;
         delete memberToInsert.dateBirth;
 
-        const { data, error } = await supabase
-            .from('members')
-            .insert([memberToInsert])
-            .select()
-            .single();
-        if (error) throw error;
-
+        const created = storageService.addItem('vibe_members', memberToInsert);
         return {
-            ...data,
-            joinDate: data.join_date,
-            dateBirth: data.date_birth,
-            avatar: data.avatar || 'https://via.placeholder.com/150?text=Member'
+            ...created,
+            joinDate: created.join_date,
+            dateBirth: created.date_birth
         };
     },
 
@@ -74,140 +56,99 @@ export const mockService = {
             delete memberToUpdate.dateBirth;
         }
 
-        const { data, error } = await supabase
-            .from('members')
-            .update(memberToUpdate)
-            .eq('id', id)
-            .select()
-            .single();
-        if (error) throw error;
-
+        const updated = storageService.updateItem('vibe_members', id, memberToUpdate);
         return {
-            ...data,
-            joinDate: data.join_date,
-            dateBirth: data.date_birth,
-            avatar: data.avatar || 'https://via.placeholder.com/150?text=Member'
+            ...updated,
+            joinDate: updated.join_date,
+            dateBirth: updated.date_birth
         };
     },
 
     updateMemberStatus: async (memberId, status) => {
-        const { data, error } = await supabase
-            .from('members')
-            .update({ status })
-            .eq('id', memberId)
-            .select()
-            .single();
-        if (error) throw error;
-        return data;
+        const members = storageService.getMembers();
+        const member = members.find(m => m.id === memberId);
+        if (member && member.role === 'admin' && status === 'inactive') {
+            throw new Error('error.adminInactivation');
+        }
+
+        return storageService.updateItem('vibe_members', memberId, { status });
     },
 
-    // Cars
-    getCars: async (memberId) => {
-        let query = supabase.from('cars').select('*');
-        if (memberId) query = query.eq('member_id', memberId);
-        const { data, error } = await query;
-        if (error) throw error;
-        return data;
-    },
-
-    addCar: async (car) => {
-        const { data, error } = await supabase
-            .from('cars')
-            .insert([car])
-            .select()
-            .single();
-        if (error) throw error;
-        return data;
-    },
-
-    updateCar: async (updatedCar) => {
-        const { data, error } = await supabase
-            .from('cars')
-            .update(updatedCar)
-            .eq('id', updatedCar.id)
-            .select()
-            .single();
-        if (error) throw error;
-        return data;
-    },
-
-    deleteCar: async (carId) => {
-        const { error } = await supabase
-            .from('cars')
-            .delete()
-            .eq('id', carId);
-        if (error) throw error;
-    },
 
     // Events
     getEvents: async () => {
-        const { data, error } = await supabase
-            .from('events')
-            .select(`
-                *,
-                event_attendees(member_id)
-            `)
-            .order('date', { ascending: true });
-        if (error) throw error;
+        const events = storageService.getEvents();
+        const attendees = storageService.getAttendees();
 
-        // Transform Supabase structure to match frontend expectations
-        return data.map(event => ({
+        return events.map(event => ({
             ...event,
-            attendees: event.event_attendees.map(a => a.member_id)
+            eventType: event.event_type,
+            attendees: attendees.filter(a => a.event_id === event.id).map(a => a.member_id)
         }));
     },
 
     createEvent: async (event) => {
-        const { data, error } = await supabase
-            .from('events')
-            .insert([event])
-            .select()
-            .single();
-        if (error) throw error;
-        return { ...data, attendees: [] };
+        const eventToInsert = { ...event };
+        if (eventToInsert.eventType) {
+            eventToInsert.event_type = eventToInsert.eventType;
+            delete eventToInsert.eventType;
+        }
+
+        const created = storageService.addItem('vibe_events', eventToInsert);
+        return { ...created, attendees: [] };
     },
 
-    updateEvent: async (eventId, updatedEvent) => {
-        const { data, error } = await supabase
-            .from('events')
-            .update(updatedEvent)
-            .eq('id', eventId)
-            .select()
-            .single();
-        if (error) throw error;
-        return data;
+    updateEvent: async (eventId, event) => {
+        const eventToUpdate = { ...event };
+        if (eventToUpdate.eventType) {
+            eventToUpdate.event_type = eventToUpdate.eventType;
+            delete eventToUpdate.eventType;
+        }
+
+        return storageService.updateItem('vibe_events', eventId, eventToUpdate);
     },
 
     joinEvent: async (eventId, memberId) => {
-        const { error } = await supabase
-            .from('event_attendees')
-            .insert([{ event_id: eventId, member_id: memberId }]);
-        if (error) throw error;
-
-        // Refetch event or return updated state locally
+        const attendees = storageService.getAttendees();
+        if (!attendees.find(a => a.event_id === eventId && a.member_id === memberId)) {
+            storageService.addItem('vibe_event_attendees', { event_id: eventId, member_id: memberId });
+        }
         return this.getEvents().then(events => events.find(e => e.id === eventId));
     },
 
     leaveEvent: async (eventId, memberId) => {
-        const { error } = await supabase
-            .from('event_attendees')
-            .delete()
-            .match({ event_id: eventId, member_id: memberId });
-        if (error) throw error;
-
+        const attendees = storageService.getAttendees();
+        const filtered = attendees.filter(a => !(a.event_id === eventId && a.member_id === memberId));
+        storageService.saveAttendees(filtered);
         return this.getEvents().then(events => events.find(e => e.id === eventId));
     },
 
-    // Contributions & Expenses (To be implemented later if needed)
     getAllContributions: async () => {
-        const { data, error } = await supabase.from('contributions').select('*');
-        if (error) throw error;
-        return data;
+        return storageService.getItems('vibe_contributions');
+    },
+
+    getMemberContributions: async (memberId) => {
+        const all = storageService.getItems('vibe_contributions');
+        return all.filter(c => (c.member_id === memberId || c.memberId === memberId));
+    },
+
+    addContribution: async (contribution) => {
+        const item = {
+            ...contribution,
+            member_id: contribution.member_id || contribution.memberId
+        };
+        delete item.memberId;
+        return storageService.addItem('vibe_contributions', item);
     },
 
     getExpenses: async () => {
-        const { data, error } = await supabase.from('expenses').select('*');
-        if (error) throw error;
-        return data;
+        return storageService.getItems('vibe_expenses');
+    },
+
+    addExpense: async (expense) => {
+        return storageService.addItem('vibe_expenses', expense);
     }
+
 };
+
+

@@ -12,7 +12,6 @@ const AdminMonthlySummary = () => {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
 
     useEffect(() => {
-        if (loading || !isAdmin) return;
 
         const fetchData = async () => {
             try {
@@ -35,20 +34,6 @@ const AdminMonthlySummary = () => {
         return <div className="container" style={{ paddingTop: '2rem' }}>{t('common.loading')}...</div>;
     }
 
-    if (!isAdmin) {
-        return (
-            <div className="container" style={{ paddingTop: '2rem' }}>
-                <div className="card error-card">
-                    <h1>{t('admin.accessDenied')}</h1>
-                    <p>{t('admin.accessDeniedMsg')}</p>
-                    <Link to="/" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>{t('admin.goHome')}</Link>
-                </div>
-                <style>{`
-                    .error-card { text-align: center; border-color: var(--danger); padding: 2rem; }
-                `}</style>
-            </div>
-        );
-    }
 
     return (
         <div className="container admin-summary-page">
@@ -75,7 +60,8 @@ const AdminMonthlySummary = () => {
                 <div className="members-status-list">
                     {members.map(member => {
                         const contribution = contributions.find(c => {
-                            if (c.memberId !== member.id) return false;
+                            const cMemberId = c.member_id || c.memberId;
+                            if (cMemberId !== member.id) return false;
                             if (!c.date) return false;
                             const [cYear, cMonth] = c.date.split('-');
                             const [year, month] = selectedDate.split('-');
@@ -85,6 +71,7 @@ const AdminMonthlySummary = () => {
                         const isPaid = !!contribution;
 
                         const handleTogglePayment = () => {
+                            if (!isAdmin) return; // Must be administrator to edit
                             if (isPaid) return;
                             if (confirm(`Mark ${member.name} as PAID for ${monthName}?`)) {
                                 const addPaymentAsync = async () => {

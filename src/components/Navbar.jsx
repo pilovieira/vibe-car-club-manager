@@ -29,20 +29,13 @@ const Navbar = () => {
     }
     console.log('Navbar: Logout initiated...');
 
-    // Fallback timer to ensure we refresh even if things hang
-    const fallbackTimer = setTimeout(() => {
-      console.log('Navbar: Logout fallback refresh triggered');
-      window.location.replace('/');
-    }, 2000);
-
     try {
       await logout();
-      clearTimeout(fallbackTimer);
-      console.log('Navbar: Logout successful, refreshing page');
-      window.location.replace('/');
+      console.log('Navbar: Logout successful');
+      navigate('/');
     } catch (err) {
       console.error('Navbar: Logout error', err);
-      window.location.replace('/');
+      navigate('/');
     }
   };
 
@@ -59,7 +52,7 @@ const Navbar = () => {
 
         <div className="nav-links">
           <Link to="/" className="nav-link">{t('nav.home')}</Link>
-          {isAdmin && <Link to="/members" className="nav-link">{t('nav.members')}</Link>}
+          <Link to="/members" className="nav-link">{t('nav.members')}</Link>
           <Link to="/events" className="nav-link">{t('nav.events')}</Link>
           <Link to="/about" className="nav-link">{t('nav.about')}</Link>
           <Link to="/contact" className="nav-link">{t('nav.contact')}</Link>
@@ -107,13 +100,19 @@ const Navbar = () => {
                     <span className="role-badge admin">Admin</span>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="btn-text logout-btn"
-                >
-                  {t('nav.logout')}
-                </button>
+                <div className="user-actions-row">
+                  <Link to={`/members/${user.id}`} state={{ edit: true }} className="btn-text edit-profile-btn">
+                    {t('profile.editProfile')}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="btn-text logout-btn"
+                  >
+                    {t('nav.logout')}
+                  </button>
+                </div>
+
               </div>
             </div>
           ) : (
@@ -291,6 +290,14 @@ const Navbar = () => {
           background: rgba(59, 130, 246, 0.15);
           color: #3b82f6;
           border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .user-actions-row {
+          display: flex;
+          gap: 1rem;
+          margin-top: 0.25rem;
+        }
+        .edit-profile-btn {
+          text-decoration: none;
         }
         .btn-text {
           background: none;

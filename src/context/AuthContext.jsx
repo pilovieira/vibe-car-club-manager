@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         let isMounted = true;
 
         const initialize = async () => {
-            console.log('AuthContext: initialize() started');
+            console.log('AuthContext: initialize() started (monitoring initial session)');
 
             // Safety timeout to prevent permanent loading state
             const timeoutId = setTimeout(() => {
@@ -34,23 +34,9 @@ export const AuthProvider = ({ children }) => {
                 }
             }, 5000);
 
-            try {
-                const session = await authService.getSession();
-                console.log('AuthContext: session fetched:', !!session);
-                if (session?.user && isMounted) {
-                    const fullUser = await refreshProfile(session.user);
-                    if (isMounted) setUser(fullUser);
-                }
-            } catch (err) {
-                console.error('AuthContext: Init error', err);
-                if (err.name === 'AbortError') {
-                    console.warn('AuthContext: AbortError detected during initialization');
-                }
-            } finally {
-                console.log('AuthContext: initialization finished, loading=false');
-                clearTimeout(timeoutId);
-                if (isMounted) setLoading(false);
-            }
+            // We no longer call getSession() here to avoid race conditions with onAuthStateChange.
+            // onAuthStateChange will emit INITIAL_SESSION which we handle below.
+            return () => clearTimeout(timeoutId);
         };
 
         const { data: { subscription } } = authService.onAuthStateChange(async (event, session) => {
@@ -86,11 +72,12 @@ export const AuthProvider = ({ children }) => {
             }
         });
 
-        initialize();
+        const cleanupInit = initialize();
 
         return () => {
             isMounted = false;
             subscription.unsubscribe();
+            if (typeof cleanupInit === 'function') cleanupInit();
         };
     }, [refreshProfile]);
 
@@ -105,16 +92,19 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
-        console.log('AuthContext: logout() initiated via service...');
+        console.log('AuthContext: logout() initiated...');
+        // Set loading to true to prevent UI flickers or navigation during logout
+        setLoading(true);
+        // Explicitly clear local state immediately
+        setUser(null);
+
         try {
             await authService.logout();
-            console.log('AuthContext: logout() service call finished');
-            // Explicitly clear local state to ensure fast UI response
-            setUser(null);
+            console.log('AuthContext: logout() successful');
         } catch (err) {
-            console.error('AuthContext: Logout service fail', err);
-            setUser(null); // Clear anyway
-            throw err;
+            console.error('AuthContext: Logout failed', err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -123,9 +113,11 @@ export const AuthProvider = ({ children }) => {
         login,
         signUp,
         logout,
-        isAdmin: !!user?.profile?.role && user.profile.role.toLowerCase() === 'admin',
+        isAdmin: user?.profile?.role === 'admin',
+        userRole: user?.profile?.role || 'visitor',
         loading
     };
+
 
     console.log('AuthContext: context value updated:', {
         userId: user?.id,

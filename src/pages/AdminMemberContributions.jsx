@@ -19,23 +19,8 @@ const AdminMemberContributions = () => {
         return <div className="container" style={{ paddingTop: '2rem' }}>{t('common.loading')}...</div>;
     }
 
-    if (!isAdmin) {
-        return (
-            <div className="container" style={{ paddingTop: '2rem' }}>
-                <div className="card error-card">
-                    <h1>{t('admin.accessDenied')}</h1>
-                    <p>{t('admin.accessDeniedMsg')}</p>
-                    <Link to="/" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>{t('admin.goHome')}</Link>
-                </div>
-                <style>{`
-                    .error-card { text-align: center; border-color: var(--danger); padding: 2rem; }
-                `}</style>
-            </div>
-        );
-    }
 
     useEffect(() => {
-        if (!isAdmin) return;
         const fetchMembers = async () => {
             try {
                 const data = await mockService.getMembers();
@@ -87,7 +72,6 @@ const AdminMemberContributions = () => {
 
     const selectedMember = members.find(m => m.id === selectedMemberId);
 
-    if (!isAdmin) return <div className="container">{t('admin.accessDenied')}</div>;
 
     return (
         <div className="container admin-contributions-page">
@@ -117,9 +101,11 @@ const AdminMemberContributions = () => {
                 <div className="animate-fade-in">
                     <div className="section-header">
                         <h2>{t('contributions.paymentHistory')} - {selectedMember.name}</h2>
-                        <button className="btn btn-primary" onClick={() => setShowAddForm(!showAddForm)}>
-                            {showAddForm ? t('contributions.cancel') : t('contributions.recordPayment')}
-                        </button>
+                        {isAdmin && (
+                            <button className="btn btn-primary" onClick={() => setShowAddForm(!showAddForm)}>
+                                {showAddForm ? t('contributions.cancel') : t('contributions.recordPayment')}
+                            </button>
+                        )}
                     </div>
 
                     {showAddForm && (

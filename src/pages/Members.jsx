@@ -7,30 +7,32 @@ import { useLanguage } from '../context/LanguageContext';
 const Members = () => {
     const { t } = useLanguage();
     const [members, setMembers] = useState([]);
-    const { user, loading } = useAuth();
+    const { user, isAdmin, loading } = useAuth();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (loading) return; // Wait for auth to initialize
 
-        const fetchMembers = async () => {
-            console.log('Members: fetchMembers() started');
-            try {
-                const data = await mockService.getMembers();
-                console.log('Members: data received, count:', data?.length);
-                setMembers(data || []);
-            } catch (err) {
-                console.error('Members: Error fetching members:', err);
-            }
-        };
+    const fetchMembers = async () => {
+        console.log('Members: fetchMembers() started');
+        try {
+            const data = await mockService.getMembers();
+            console.log('Members: data received, count:', data?.length);
+            setMembers(data || []);
+        } catch (err) {
+            console.error('Members: Error fetching members:', err);
+        }
+    };
+
+    useEffect(() => {
         fetchMembers();
-    }, [loading, user, navigate]);
+    }, []);
+
 
     return (
         <div className="container members-page">
             <header className="page-header">
                 <h1 className="page-title">{t('members.title')}</h1>
             </header>
+
 
             <div className="members-grid">
                 {members.length === 0 ? (
@@ -49,6 +51,18 @@ const Members = () => {
                                     <div className="member-info">
                                         <h3 className="member-name">{member.name}</h3>
                                         <p className="member-role">{member.role} • {t('members.joined')} {member.joinDate ? new Date(member.joinDate).getFullYear() : 'N/A'}</p>
+                                        {(isAdmin || (user && user.id === member.id)) && (
+                                            <button
+                                                className="btn-edit-sm"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    navigate(`/members/${member.id}`, { state: { edit: true } });
+                                                }}
+                                            >
+                                                {t('common.edit')}
+                                            </button>
+                                        )}
                                     </div>
                                 </Link>
                             </div>
@@ -143,6 +157,22 @@ const Members = () => {
             opacity: 0.8;
         }
         
+        .btn-edit-sm {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-edit-sm:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
         .card-actions {
             display: flex;
             border-top: 1px solid var(--glass-border);
@@ -171,6 +201,45 @@ const Members = () => {
         .btn-text:hover {
             color: var(--text-primary);
             text-decoration: underline;
+        }
+        .add-member-form {
+            margin-bottom: 2rem;
+            border-color: var(--primary);
+            max-width: 600px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .form-actions {
+            grid-column: span 2;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-success:hover {
+            opacity: 0.9;
+        }
+        .btn-success:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
       `}</style>
         </div>

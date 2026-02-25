@@ -10,17 +10,6 @@ const AdminDashboard = () => {
         return <div className="container" style={{ paddingTop: '2rem' }}>{t('common.loading')}...</div>;
     }
 
-    if (!isAdmin) {
-        return (
-            <div className="container" style={{ paddingTop: '2rem' }}>
-                <div className="card error-card">
-                    <h1>{t('admin.accessDenied')}</h1>
-                    <p>{t('admin.accessDeniedMsg')}</p>
-                    <Link to="/" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>{t('admin.goHome')}</Link>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="container admin-dashboard">
@@ -56,7 +45,15 @@ const AdminDashboard = () => {
                     <h2>{t('admin.manageMembers')}</h2>
                     <p>{t('admin.manageMembersDesc')}</p>
                 </Link>
+
+
+                <Link to="/admin/create-member" className="dashboard-card">
+                    <div className="icon">👤</div>
+                    <h2>{t('admin.createUser') || 'Create User'}</h2>
+                    <p>{t('admin.createUserDesc') || 'Register new members or administrators.'}</p>
+                </Link>
             </div>
+
 
             <style>{`
         .dashboard-grid {

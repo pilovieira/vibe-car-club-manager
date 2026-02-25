@@ -18,7 +18,7 @@ const MemberProfile = () => {
     // Edit Profile State
     const [error, setError] = useState('');
     const [editData, setEditData] = useState({
-        name: '', username: '', email: '', avatar: '', description: '', dateBirth: '', status: 'active', gender: 'male'
+        name: '', username: '', email: '', avatar: '', description: '', dateBirth: '', status: 'active', gender: 'male', role: 'member'
     });
 
     useEffect(() => {
@@ -44,7 +44,8 @@ const MemberProfile = () => {
                     description: m.description || '',
                     dateBirth: m.dateBirth || '',
                     status: m.status || 'active',
-                    gender: m.gender || 'male'
+                    gender: m.gender || 'male',
+                    role: m.role || 'member'
                 });
                 setError('');
             } catch (err) {
@@ -150,28 +151,26 @@ const MemberProfile = () => {
                 <div className="edit-profile-form card">
                     <h2>{t('profile.editProfile')}</h2>
                     {error && <div className="error-message" style={{ color: 'var(--danger)', marginBottom: '1rem' }}>{error}</div>}
-                    <form onSubmit={handleUpdateProfile} className="form-grid">
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>{t('member.name')}</label>
-                                <input
-                                    className="input-field"
-                                    value={editData.name}
-                                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>{t('member.username')}</label>
-                                <input
-                                    className={`input-field ${error ? 'error' : ''}`}
-                                    value={editData.username}
-                                    onChange={(e) => setEditData({ ...editData, username: e.target.value })}
-                                    required
-                                />
-                            </div>
+                    <form onSubmit={handleUpdateProfile} className="edit-form-grid">
+                        <div className="form-group">
+                            <label>{t('member.name')}</label>
+                            <input
+                                className="input-field"
+                                value={editData.name}
+                                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                                required
+                            />
                         </div>
                         <div className="form-group">
+                            <label>{t('member.username')}</label>
+                            <input
+                                className={`input-field ${error ? 'error' : ''}`}
+                                value={editData.username}
+                                onChange={(e) => setEditData({ ...editData, username: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group full-width">
                             <label>{t('profile.email')}</label>
                             <input
                                 className="input-field"
@@ -181,7 +180,7 @@ const MemberProfile = () => {
                                 type="email"
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="form-group full-width">
                             <label>{t('profile.iconUrl')}</label>
                             <input
                                 className="input-field"
@@ -208,6 +207,18 @@ const MemberProfile = () => {
                             >
                                 <option value="male">{t('gender.male')}</option>
                                 <option value="female">{t('gender.female')}</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>{t('member.role') || 'Role'}</label>
+                            <select
+                                className="input-field"
+                                value={editData.role}
+                                onChange={e => setEditData({ ...editData, role: e.target.value })}
+                                disabled={!isAdmin}
+                            >
+                                <option value="member">{t('role.member') || 'Member'}</option>
+                                <option value="admin">{t('role.admin') || 'Admin'}</option>
                             </select>
                         </div>
                         <div className="form-group full-width">

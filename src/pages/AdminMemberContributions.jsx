@@ -13,6 +13,7 @@ const AdminMemberContributions = () => {
 
     // New Contribution State
     const [showAddForm, setShowAddForm] = useState(false);
+    const [monthlyContribution, setMonthlyContribution] = useState(50);
     const [newContribution, setNewContribution] = useState({ date: '', amount: 50 });
 
     if (loading) {
@@ -25,6 +26,9 @@ const AdminMemberContributions = () => {
             try {
                 const data = await mockService.getMembers();
                 setMembers(data);
+                const value = await mockService.getProperty('monthly_contribution_value', 50);
+                setMonthlyContribution(value);
+                setNewContribution(prev => ({ ...prev, amount: value }));
             } catch (err) {
                 console.error('Error fetching members:', err);
             }
@@ -62,7 +66,7 @@ const AdminMemberContributions = () => {
 
                 setContributions([...contributions, added]);
                 setShowAddForm(false);
-                setNewContribution({ date: '', amount: 50 });
+                setNewContribution({ date: '', amount: monthlyContribution });
             } catch (err) {
                 console.error('Error adding contribution:', err);
             }

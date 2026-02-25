@@ -96,7 +96,6 @@ export const mockService = {
             dateBirth: updated.data().date_birth
         };
     },
-
     updateMemberStatus: async (memberId, status) => {
         const memberDoc = await getDoc(doc(db, 'members', memberId));
         if (memberDoc.exists()) {
@@ -108,6 +107,28 @@ export const mockService = {
         const docRef = doc(db, 'members', memberId);
         await updateDoc(docRef, { status });
         return { id: memberId, status };
+    },
+
+    // Properties / Settings
+    getProperties: async () => {
+        const querySnapshot = await getDocs(collection(db, 'properties'));
+        const props = {};
+        querySnapshot.forEach(doc => {
+            props[doc.id] = doc.data().value;
+        });
+        return props;
+    },
+
+    updateProperty: async (key, value) => {
+        const docRef = doc(db, 'properties', key);
+        await setDoc(docRef, { value });
+        return { key, value };
+    },
+
+    getProperty: async (key, defaultValue) => {
+        const docRef = doc(db, 'properties', key);
+        const docSnap = await getDoc(docRef);
+        return docSnap.exists() ? docSnap.data().value : defaultValue;
     },
 
     // Events

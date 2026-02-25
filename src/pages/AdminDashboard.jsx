@@ -52,6 +52,13 @@ const AdminDashboard = () => {
                     <h2>{t('admin.createUser') || 'Create User'}</h2>
                     <p>{t('admin.createUserDesc') || 'Register new members or administrators.'}</p>
                 </Link>
+
+                <Link to="/admin/properties" className="dashboard-card">
+                    <div className="icon">⚙️</div>
+                    <h2>{t('admin.properties') || 'Settings'}</h2>
+                    <p>{t('admin.propertiesDesc') || 'Manage club-wide properties and values.'}</p>
+                </Link>
+
             </div>
 
 

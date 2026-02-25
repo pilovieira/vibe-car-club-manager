@@ -95,6 +95,8 @@ export const translations = {
         'admin.manageMembersDesc': 'View member list and profile details.',
         'admin.createUser': 'Create User',
         'admin.createUserDesc': 'Register new members or administrators.',
+        'admin.properties': 'Settings',
+        'admin.propertiesDesc': 'Manage club-wide properties and values.',
         'admin.accessDenied': 'Access Denied',
         'admin.accessDeniedMsg': 'You do not have permission to view this page.',
         'admin.goHome': 'Go Home',
@@ -139,11 +141,16 @@ export const translations = {
         'balance.save': 'Save',
         'balance.cancel': 'Cancel',
 
+        // Settings Page
+        'settings.monthlyContribution': 'Monthly Contribution Value',
+        'settings.monthlyContributionDesc': 'Standard amount charged to members each month.',
+
         // Footer
         'footer.rights': 'All rights reserved.',
 
         // Common
         'common.loading': 'Loading...',
+        'common.success': 'Success',
         'common.save': 'Save',
         'common.cancel': 'Cancel',
         'common.edit': 'Edit',
@@ -300,6 +307,8 @@ export const translations = {
         'admin.manageMembersDesc': 'Visualize a lista de membros e detalhes do perfil.',
         'admin.createUser': 'Criar Usuário',
         'admin.createUserDesc': 'Cadastrar novos membros ou administradores.',
+        'admin.properties': 'Propriedades',
+        'admin.propertiesDesc': 'Gerenciar propriedades e valores do clube.',
         'admin.accessDenied': 'Acesso Negado',
         'admin.accessDeniedMsg': 'Você não tem permissão para visualizar esta página.',
         'admin.goHome': 'Ir para Início',
@@ -408,5 +417,10 @@ export const translations = {
         'login.email': 'Email',
         'login.registering': 'Criando conta...',
         'login.success': 'Conta criada! Por favor, verifique seu email para confirmar.',
+        'common.success': 'Sucesso',
+
+        // Settings Page
+        'settings.monthlyContribution': 'Valor da Mensalidade',
+        'settings.monthlyContributionDesc': 'Valor padrão cobrado dos membros todos os meses.',
     }
 };

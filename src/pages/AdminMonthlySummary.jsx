@@ -10,6 +10,7 @@ const AdminMonthlySummary = () => {
     const [members, setMembers] = useState([]);
     const [contributions, setContributions] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
+    const [monthlyContribution, setMonthlyContribution] = useState(50);
 
     useEffect(() => {
 
@@ -19,6 +20,8 @@ const AdminMonthlySummary = () => {
                 setMembers(fetchedMembers);
                 const fetchedContributions = await mockService.getAllContributions();
                 setContributions(fetchedContributions);
+                const value = await mockService.getProperty('monthly_contribution_value', 50);
+                setMonthlyContribution(value);
             } catch (err) {
                 console.error('Error fetching summary data:', err);
             }
@@ -79,7 +82,7 @@ const AdminMonthlySummary = () => {
                                         await mockService.addContribution({
                                             member_id: member.id,
                                             date: `${selectedDate}-01`,
-                                            amount: 50
+                                            amount: monthlyContribution
                                         });
                                         const updatedContributions = await mockService.getAllContributions();
                                         setContributions(updatedContributions);

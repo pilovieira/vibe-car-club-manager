@@ -4,6 +4,7 @@ import { mockService } from '../services/mockData';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { FaImages } from 'react-icons/fa';
+import { parseSafeDate } from '../utils/dateUtils';
 
 const Events = () => {
     const navigate = useNavigate();
@@ -148,18 +149,18 @@ const Events = () => {
                     <div className="event-date">
                         {language === 'en' ? (
                             <>
-                                <span className="month">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').toLocaleString('en-US', { month: 'short' })}</span>
-                                <span className="day">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').getDate()}</span>
+                                <span className="month">{parseSafeDate(event.date).toLocaleString('en-US', { month: 'short' })}</span>
+                                <span className="day">{parseSafeDate(event.date).getDate()}</span>
                             </>
                         ) : (
                             <>
-                                <span className="day">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').getDate()}</span>
-                                <span className="month">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').toLocaleString('pt-BR', { month: 'short' })}</span>
+                                <span className="day">{parseSafeDate(event.date).getDate()}</span>
+                                <span className="month">{parseSafeDate(event.date).toLocaleString('pt-BR', { month: 'short' })}</span>
                             </>
                         )}
-                        <span className="year">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').getFullYear()}</span>
+                        <span className="year">{parseSafeDate(event.date).getFullYear()}</span>
                         {event.date.includes('T') && (
-                            <span className="time">{new Date(event.date).toLocaleTimeString(language === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span className="time">{parseSafeDate(event.date).toLocaleTimeString(language === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                         )}
                     </div>
                     <div className="event-body">
@@ -200,11 +201,11 @@ const Events = () => {
                         <button
                             className={`action-btn join-btn ${isAttending(event) ? 'attending' : ''}`}
                             onClick={() => handleToggleEvent(event.id)}
-                            disabled={(!isAttending(event) && (user.status === 'inactive' || new Date(event.date.includes('T') ? event.date : event.date + 'T23:59:59') < new Date()))}
+                            disabled={(!isAttending(event) && (user.status === 'inactive' || parseSafeDate(event.date) < new Date()))}
                         >
                             {isAttending(event)
                                 ? t('events.leave')
-                                : (new Date(event.date.includes('T') ? event.date : event.date + 'T23:59:59') < new Date()
+                                : (parseSafeDate(event.date) < new Date()
                                     ? t('events.ended')
                                     : (user.status === 'inactive' ? t('events.inactiveWarning') : t('events.join')))}
                         </button>
@@ -235,18 +236,12 @@ const Events = () => {
     );
 
     const upcomingEvents = events
-        .filter(event => {
-            const dateStr = event.date.includes('T') ? event.date : `${event.date}T23:59:59`;
-            return new Date(dateStr) >= new Date();
-        })
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
+        .filter(event => parseSafeDate(event.date) >= new Date())
+        .sort((a, b) => parseSafeDate(a.date) - parseSafeDate(b.date));
 
     const pastEvents = events
-        .filter(event => {
-            const dateStr = event.date.includes('T') ? event.date : `${event.date}T23:59:59`;
-            return new Date(dateStr) < new Date();
-        })
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
+        .filter(event => parseSafeDate(event.date) < new Date())
+        .sort((a, b) => parseSafeDate(b.date) - parseSafeDate(a.date));
 
     return (
         <div className="container events-page">

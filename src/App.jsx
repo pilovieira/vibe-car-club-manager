@@ -13,7 +13,6 @@ import AdminGlobalBalance from './pages/AdminGlobalBalance';
 import AdminProperties from './pages/AdminProperties';
 import AdminLogBook from './pages/AdminLogBook';
 import Events from './pages/Events';
-import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -44,7 +43,6 @@ function App() {
           </Route>
 
 
-          <Route path="about" element={<AboutUs />} />
           <Route path="contact" element={<Contact />} />
           <Route path="login" element={<Login />} />
 

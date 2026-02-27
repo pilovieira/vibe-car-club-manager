@@ -70,7 +70,6 @@ const Navbar = () => {
             <Link to="/" className="nav-link" onClick={handleNavClick}>{t('nav.home')}</Link>
             <Link to="/members" className="nav-link" onClick={handleNavClick}>{t('nav.members')}</Link>
             <Link to="/events" className="nav-link" onClick={handleNavClick}>{t('nav.events')}</Link>
-            <Link to="/about" className="nav-link" onClick={handleNavClick}>{t('nav.about')}</Link>
             <Link to="/contact" className="nav-link" onClick={handleNavClick}>{t('nav.contact')}</Link>
             {isAdmin && <Link to="/admin" className="nav-link admin-link" onClick={handleNavClick}>{t('nav.admin')}</Link>}
           </div>

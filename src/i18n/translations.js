@@ -177,21 +177,9 @@ export const translations = {
         'common.close': 'Close',
 
         // Navbar - New Pages
-        'nav.about': 'About Us',
         'nav.contact': 'Contact',
 
-        // About Us Page
-        'about.title': 'About Us',
-        'about.subtitle': 'The Spirit of Adventure',
-        'about.history.title': 'Our History',
-        'about.history.text': 'Founded in 2023, Offroad Maringá was born from the passion of a group of adventurers who refused to let paved roads define their limits. What started as weekend trail rides quickly evolved into a brotherhood united by mud, adrenaline, and the unbreakable spirit of exploration. Today, we are Maringá\'s premier offroad community, where every member is a legend in the making.',
-        'about.mission.title': 'Our Mission',
-        'about.mission.text': 'We exist to conquer the unconquerable. Our mission is to push boundaries, explore uncharted territories, and build a community where passion for offroading transcends the ordinary. We don\'t just drive—we dominate nature\'s toughest challenges.',
-        'about.philanthropy.title': 'Giving Back',
-        'about.philanthropy.text': 'Beyond the trails, Offroad Maringá is committed to making a difference. We regularly organize charity drives, environmental cleanup expeditions, and community support initiatives. Our members have contributed to local food banks, participated in disaster relief efforts, and sponsored youth adventure programs. We believe that true strength is measured not just by what we conquer, but by what we give back.',
-        'about.join.title': 'Join the Brotherhood',
-        'about.join.text': 'Are you ready to unleash your inner warrior? Join us and become part of a legacy that refuses to be tamed.',
-        'about.followUs': 'Follow us on Instagram',
+
 
         // Contact Page
         'contact.title': 'Contact Us',
@@ -401,21 +389,9 @@ export const translations = {
         'common.close': 'Fechar',
 
         // Navbar - New Pages
-        'nav.about': 'Sobre Nós',
         'nav.contact': 'Contato',
 
-        // About Us Page
-        'about.title': 'Sobre Nós',
-        'about.subtitle': 'O Espírito da Aventura',
-        'about.history.title': 'Nossa História',
-        'about.history.text': 'Fundado em 2023, o Offroad Maringá nasceu da paixão de um grupo de aventureiros que se recusaram a deixar estradas pavimentadas definirem seus limites. O que começou como passeios de fim de semana rapidamente evoluiu para uma irmandade unida por lama, adrenalina e o espírito inquebrável de exploração. Hoje, somos a principal comunidade offroad de Maringá, onde cada membro é uma lenda em formação.',
-        'about.mission.title': 'Nossa Missão',
-        'about.mission.text': 'Existimos para conquistar o inconquistável. Nossa missão é ultrapassar limites, explorar territórios inexplorados e construir uma comunidade onde a paixão pelo offroad transcende o ordinário. Nós não apenas dirigimos—dominamos os desafios mais difíceis da natureza.',
-        'about.philanthropy.title': 'Retribuindo',
-        'about.philanthropy.text': 'Além das trilhas, o Offroad Maringá está comprometido em fazer a diferença. Organizamos regularmente campanhas de caridade, expedições de limpeza ambiental e iniciativas de apoio comunitário. Nossos membros contribuíram para bancos de alimentos locais, participaram de esforços de socorro em desastres e patrocinaram programas de aventura para jovens. Acreditamos que a verdadeira força não é medida apenas pelo que conquistamos, mas pelo que devolvemos.',
-        'about.join.title': 'Junte-se à Irmandade',
-        'about.join.text': 'Você está pronto para liberar seu guerreiro interior? Junte-se a nós e faça parte de um legado que se recusa a ser domado.',
-        'about.followUs': 'Siga-nos no Instagram',
+
 
         // Contact Page
         'contact.title': 'Fale Conosco',

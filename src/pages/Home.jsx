@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useSettings } from '../context/SettingsContext';
+import GenericLogo from '../components/GenericLogo';
 
 const Home = () => {
   const { t } = useLanguage();
@@ -14,7 +15,13 @@ const Home = () => {
     <div className="home-page">
       <section className="hero">
         <div className="container hero-content">
-          <img src="/logo.jpg" alt="Logo" className="hero-logo" />
+          <div className="hero-logo-wrapper">
+            {settings.app_logo ? (
+              <img src={settings.app_logo} alt="Logo" className="hero-logo" />
+            ) : (
+              <GenericLogo className="hero-logo-generic" />
+            )}
+          </div>
           <h1 className="hero-title">{firstPart} <span className="text-gradient">{secondPart}</span>.</h1>
           <p className="hero-subtitle">
             {t('home.subtitle')}
@@ -112,14 +119,27 @@ const Home = () => {
         p {
             color: var(--text-secondary);
         }
-        .hero-logo {
+        .hero-logo-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            animation: float 6s ease-in-out infinite;
+        }
+        .hero-logo, .hero-logo-generic {
             width: 150px;
             height: 150px;
             border-radius: 50%;
             border: 4px solid var(--accent);
-            margin-bottom: 2rem;
             box-shadow: 0 0 20px var(--primary-semi);
-            animation: float 6s ease-in-out infinite;
+            object-fit: cover;
+        }
+        .hero-logo-generic {
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            padding: 2rem;
         }
         @keyframes float {
             0% { transform: translateY(0px); }

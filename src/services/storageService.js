@@ -81,5 +81,34 @@ export const storageService = {
         } catch (error) {
             console.error('Error deleting file from storage:', error);
         }
+    },
+
+    /**
+     * Uploads the application logo
+     * @param {File} file - Image file to upload
+     * @returns {Promise<string>} - Download URL of the uploaded logo
+     */
+    uploadAppLogo: async (file) => {
+        if (!file) throw new Error('No file provided');
+
+        if (!file.type.startsWith('image/')) {
+            throw new Error('Only image files are allowed');
+        }
+
+        const maxSize = 2 * 1024 * 1024;
+        if (file.size > maxSize) {
+            throw new Error('File size should be less than 2MB');
+        }
+
+        const storageRef = ref(storage, `app/logo_${Date.now()}_${file.name}`);
+
+        try {
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            return downloadURL;
+        } catch (error) {
+            console.error('Error uploading app logo:', error);
+            throw new Error('Failed to upload image. Please try again.');
+        }
     }
 };

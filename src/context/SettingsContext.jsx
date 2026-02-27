@@ -13,12 +13,13 @@ export const useSettings = () => {
 
 export const SettingsProvider = ({ children }) => {
     const [settings, setSettings] = useState({
-        app_title: 'Offroad Maringá',
-        monthly_contribution_value: 50,
+        app_title: 'App Title',
         app_theme: 'mud',
         contact_phone: '',
         contact_email: '',
-        contact_instagram: ''
+        contact_instagram: '',
+        app_logo: '',
+        home_description: ''
     });
     const [loading, setLoading] = useState(true);
 

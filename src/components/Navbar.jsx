@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useSettings } from '../context/SettingsContext';
 import { useState } from 'react';
+import GenericLogo from './GenericLogo';
+import { FaGlobe, FaChevronDown } from 'react-icons/fa';
 
 const Navbar = () => {
   const { user, login, logout, isAdmin } = useAuth();
@@ -48,7 +50,11 @@ const Navbar = () => {
     <nav className={`navbar ${showMobileMenu ? 'mobile-menu-open' : ''}`}>
       <div className="container nav-container">
         <Link to="/" className="nav-logo" onClick={handleNavClick}>
-          <img src="/logo.jpg" alt={settings.app_title} className="logo-img" />
+          {settings.app_logo ? (
+            <img src={settings.app_logo} alt={settings.app_title} className="logo-img" />
+          ) : (
+            <GenericLogo />
+          )}
           <span className="logo-text desktop-only">{settings.app_title}</span>
         </Link>
 
@@ -76,26 +82,28 @@ const Navbar = () => {
             <div className="lang-selector">
               <button
                 onClick={() => setShowLangMenu(!showLangMenu)}
-                className="lang-toggle"
+                className={`lang-toggle ${showLangMenu ? 'active' : ''}`}
                 onBlur={() => setTimeout(() => setShowLangMenu(false), 200)}
               >
-                <span className="lang-flag">{currentLang?.flag || '🇧🇷'}</span>
-                <span className="lang-name">{currentLang?.name || 'Português'}</span>
-                <span className="lang-arrow">{showLangMenu ? '▲' : '▼'}</span>
+                <FaGlobe className="globe-icon" />
+                <span className="lang-flag">{currentLang?.flag}</span>
+                <span className="lang-name">{currentLang?.code.toUpperCase()}</span>
+                <FaChevronDown className={`arrow-icon ${showLangMenu ? 'up' : ''}`} />
               </button>
               {showLangMenu && (
-                <div className="lang-menu">
+                <div className="lang-menu animate-slide-up">
                   {languages.map(lang => (
                     <button
                       key={lang.code}
-                      className={`lang-option ${language === lang.code ? 'active' : ''}`}
+                      className={`lang-option ${language === lang.code ? 'selected' : ''}`}
                       onClick={() => {
                         setLanguage(lang.code);
                         setShowLangMenu(false);
                       }}
                     >
                       <span className="lang-flag">{lang.flag}</span>
-                      <span>{lang.name}</span>
+                      <span className="lang-label">{lang.name}</span>
+                      {language === lang.code && <span className="active-dot"></span>}
                     </button>
                   ))}
                 </div>
@@ -161,7 +169,21 @@ const Navbar = () => {
           transition: transform 0.3s ease;
         }
         
-        .nav-logo:hover .logo-img {
+        .generic-logo {
+          height: 44px;
+          width: 44px;
+          border-radius: 12px;
+          border: 2px solid var(--accent);
+          background: var(--bg-card);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--accent);
+          transition: transform 0.3s ease;
+        }
+        
+        .nav-logo:hover .logo-img,
+        .nav-logo:hover .generic-logo {
           transform: rotate(10deg) scale(1.05);
         }
         
@@ -207,17 +229,108 @@ const Navbar = () => {
           gap: 1.5rem;
         }
         
+        .lang-selector {
+          position: relative;
+        }
+
+        .lang-selector {
+          position: relative;
+        }
+        
         .lang-toggle {
-          background: rgba(255, 255, 255, 0.03);
+          background: rgba(255, 255, 255, 0.05);
           border: 1px solid var(--glass-border);
           color: var(--text-primary);
-          padding: 0.4rem 0.75rem;
-          border-radius: 0.5rem;
+          padding: 0.5rem 0.85rem;
+          border-radius: 2rem;
           font-size: 0.85rem;
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          min-width: unset;
+          gap: 0.6rem;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          font-weight: 700;
+        }
+        
+        .lang-toggle:hover, .lang-toggle.active {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: var(--accent);
+          box-shadow: 0 0 15px var(--primary-shadow);
+        }
+
+        .globe-icon {
+          color: var(--accent);
+          font-size: 0.9rem;
+          opacity: 0.8;
+        }
+
+        .arrow-icon {
+          font-size: 0.7rem;
+          transition: transform 0.3s ease;
+          opacity: 0.6;
+        }
+
+        .arrow-icon.up {
+          transform: rotate(180deg);
+        }
+
+        .lang-menu {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          margin-top: 0.75rem;
+          background: var(--bg-card);
+          border: 1px solid var(--glass-border);
+          border-radius: 1rem;
+          overflow: hidden;
+          min-width: 160px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+          backdrop-filter: blur(10px);
+          z-index: 1000;
+        }
+
+        .lang-option {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1rem;
+          background: transparent;
+          border: none;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: all 0.2s;
+          font-weight: 600;
+          font-size: 0.9rem;
+          text-align: left;
+        }
+
+        .lang-option:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--accent);
+        }
+
+        .lang-option.selected {
+          background: rgba(166, 123, 91, 0.1);
+          color: var(--text-primary);
+        }
+
+        .active-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--accent);
+          margin-left: auto;
+          box-shadow: 0 0 5px var(--accent);
+        }
+
+        .animate-slide-up {
+          animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         
         .user-section {

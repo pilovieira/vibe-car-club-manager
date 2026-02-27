@@ -45,6 +45,17 @@ service firebase.storage {
                     && (resource.metadata.uploadedById == request.auth.uid || isAdmin());
     }
     
+    // Application assets (logo, etc.)
+    match /app/{fileName} {
+      // Logos are visible to all users (even unauthenticated)
+      allow read: if true;
+      
+      // Only admins can upload and manage app assets
+      allow write: if isAdmin()
+                    && request.resource.size < 2 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+    }
+    
     // Default: Deny all other access
     match /{allPaths=**} {
       allow read, write: if false;

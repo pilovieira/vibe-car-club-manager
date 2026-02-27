@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useSettings } from '../context/SettingsContext';
+import { storageService } from '../services/storageService';
+import { FaSpinner, FaUpload } from 'react-icons/fa';
 
 const AdminProperties = () => {
     const { t } = useLanguage();
@@ -17,6 +19,27 @@ const AdminProperties = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+    const handleLogoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setIsUploadingLogo(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            const downloadURL = await storageService.uploadAppLogo(file);
+            await handleUpdate('app_logo', downloadURL);
+            setSuccess(t('settings.logoUploaded') || 'App logo uploaded successfully!');
+        } catch (err) {
+            console.error('Error uploading logo:', err);
+            setError(err.message);
+        } finally {
+            setIsUploadingLogo(false);
+        }
+    };
 
     useEffect(() => {
         if (!authLoading && !isAdmin) {
@@ -32,7 +55,7 @@ const AdminProperties = () => {
                     props.monthly_contribution_value = 50;
                 }
                 if (!props.app_title) {
-                    props.app_title = 'Offroad Maringá';
+                    props.app_title = 'App Title';
                 }
                 setProperties(props);
             } catch (err) {
@@ -91,6 +114,33 @@ const AdminProperties = () => {
 
             <div className="card settings-card">
                 <div className="settings-list">
+                    <div className="setting-item">
+                        <div className="setting-info">
+                            <h3>{t('settings.appLogo') || 'App Logo'}</h3>
+                            <p>{t('settings.appLogoDesc') || 'Optional application logo image (max 2MB).'}</p>
+                        </div>
+                        <div className="setting-action">
+                            <div className="logo-upload-container">
+                                {properties.app_logo ? (
+                                    <img src={properties.app_logo} alt="App Logo" className="logo-preview-admin" />
+                                ) : (
+                                    <div className="logo-placeholder-admin">No Logo</div>
+                                )}
+                                <label className="btn btn-outline logo-upload-btn">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleLogoUpload}
+                                        style={{ display: 'none' }}
+                                        disabled={isUploadingLogo || saving}
+                                    />
+                                    {isUploadingLogo ? <FaSpinner className="spinner" /> : <FaUpload />}
+                                    <span>{t('common.upload') || 'Upload'}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="setting-item">
                         <div className="setting-info">
                             <h3>{t('settings.appTitle') || 'App Title'}</h3>
@@ -309,6 +359,37 @@ const AdminProperties = () => {
                         align-items: flex-start;
                         gap: 1rem;
                     }
+                }
+                .logo-upload-container {
+                    display: flex;
+                    align-items: center;
+                    gap: 1.5rem;
+                }
+                .logo-preview-admin {
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 12px;
+                    object-fit: cover;
+                    border: 2px solid var(--accent);
+                }
+                .logo-placeholder-admin {
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 12px;
+                    border: 2px dashed var(--glass-border);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.7rem;
+                    color: var(--text-secondary);
+                }
+                .logo-upload-btn {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    padding: 0.5rem 1rem;
                 }
             `}</style>
         </div>

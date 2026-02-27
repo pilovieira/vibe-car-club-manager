@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { authService } from '../services/authService';
 import { mockService } from '../services/mockData';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -21,6 +22,17 @@ const MemberProfile = () => {
     const [editData, setEditData] = useState({
         name: '', username: '', email: '', avatar: '', description: '', dateBirth: '', status: 'active', gender: 'male', role: 'member'
     });
+
+    // Change Password State
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        current: '',
+        new: '',
+        confirm: ''
+    });
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordSuccess, setPasswordSuccess] = useState('');
+    const [isSavingPassword, setIsSavingPassword] = useState(false);
 
     useEffect(() => {
         if (loading) return;
@@ -120,6 +132,40 @@ const MemberProfile = () => {
         }
     };
 
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        setPasswordError('');
+        setPasswordSuccess('');
+
+        if (passwordData.new !== passwordData.confirm) {
+            setPasswordError(t('profile.passwordMismatch'));
+            return;
+        }
+
+        setIsSavingPassword(true);
+        try {
+            await authService.changePassword(passwordData.current, passwordData.new);
+            setPasswordSuccess(t('profile.passwordChanged'));
+            setPasswordData({ current: '', new: '', confirm: '' });
+
+            // Log operation
+            await mockService.createLog({
+                userId: user.id || user.uid,
+                userName: user.name || user.displayName || user.email,
+                description: `Changed own password`
+            });
+
+            setTimeout(() => {
+                setIsChangingPassword(false);
+                setPasswordSuccess('');
+            }, 2000);
+        } catch (err) {
+            setPasswordError(err.message);
+        } finally {
+            setIsSavingPassword(false);
+        }
+    };
+
     if (!member) return <div className="container">Loading...</div>;
 
     const isOwnProfile = user && user.id === member.id;
@@ -140,6 +186,9 @@ const MemberProfile = () => {
                             </h1>
                             <p className="profile-username">@{member.username}</p>
                             <div className="profile-actions">
+                                {isOwnProfile && (
+                                    <button className="btn-text" onClick={() => setIsChangingPassword(true)}>{t('profile.changePassword')}</button>
+                                )}
                                 {canEdit && (
                                     <button className="btn-text" onClick={() => setIsEditing(true)}>{t('profile.editProfile')}</button>
                                 )}
@@ -250,6 +299,68 @@ const MemberProfile = () => {
                             <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)}>{t('profile.cancel')}</button>
                         </div>
                     </form>
+                </div>
+            )}
+
+            {isChangingPassword && (
+                <div className="modal-overlay">
+                    <div className="card modal-card">
+                        <h3>{t('profile.changePassword')}</h3>
+                        {passwordError && <div className="error-message">{passwordError}</div>}
+                        {passwordSuccess && <div className="success-message">{passwordSuccess}</div>}
+
+                        <form onSubmit={handleChangePassword} className="form-vertical">
+                            <div className="form-group">
+                                <label>{t('profile.currentPassword')}</label>
+                                <input
+                                    type="password"
+                                    className="input-field"
+                                    value={passwordData.current}
+                                    onChange={e => setPasswordData({ ...passwordData, current: e.target.value })}
+                                    required
+                                    autoComplete="current-password"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>{t('profile.newPassword')}</label>
+                                <input
+                                    type="password"
+                                    className="input-field"
+                                    value={passwordData.new}
+                                    onChange={e => setPasswordData({ ...passwordData, new: e.target.value })}
+                                    required
+                                    autoComplete="new-password"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>{t('profile.confirmNewPassword')}</label>
+                                <input
+                                    type="password"
+                                    className="input-field"
+                                    value={passwordData.confirm}
+                                    onChange={e => setPasswordData({ ...passwordData, confirm: e.target.value })}
+                                    required
+                                    autoComplete="new-password"
+                                />
+                            </div>
+                            <div className="form-actions">
+                                <button type="submit" className="btn btn-primary" disabled={isSavingPassword}>
+                                    {isSavingPassword ? t('common.loading') : t('common.save')}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline"
+                                    onClick={() => {
+                                        setIsChangingPassword(false);
+                                        setPasswordError('');
+                                        setPasswordData({ current: '', new: '', confirm: '' });
+                                    }}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
 
@@ -381,6 +492,54 @@ const MemberProfile = () => {
             }
             .btn-success-light:hover {
                 background: rgba(16, 185, 129, 0.2);
+            }
+
+            /* Modal Styles */
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(4px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                padding: 1rem;
+            }
+            .modal-card {
+                width: 100%;
+                max-width: 400px;
+                padding: 2rem;
+            }
+            .modal-card h3 {
+                margin-bottom: 1.5rem;
+                text-align: center;
+            }
+            .form-vertical {
+                display: flex;
+                flex-direction: column;
+                gap: 1.25rem;
+            }
+            .error-message {
+                color: var(--danger);
+                background: rgba(239, 68, 68, 0.1);
+                padding: 0.75rem;
+                border-radius: 0.5rem;
+                margin-bottom: 1rem;
+                font-size: 0.9rem;
+                text-align: center;
+            }
+            .success-message {
+                color: var(--success);
+                background: rgba(16, 185, 129, 0.1);
+                padding: 0.75rem;
+                border-radius: 0.5rem;
+                margin-bottom: 1rem;
+                font-size: 0.9rem;
+                text-align: center;
             }
         `}</style>
         </div>

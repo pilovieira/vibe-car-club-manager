@@ -5,7 +5,10 @@ import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    updatePassword,
+    reauthenticateWithCredential,
+    EmailAuthProvider
 } from 'firebase/auth';
 import {
     doc,
@@ -224,5 +227,37 @@ export const authService = {
     getProfile: async (userId) => {
         const memberDoc = await getDoc(doc(db, 'members', userId));
         return memberDoc.exists() ? memberDoc.data() : null;
+    },
+
+    reauthenticate: async (currentPassword) => {
+        const user = auth.currentUser;
+        if (!user) throw new Error('No user logged in');
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        return await reauthenticateWithCredential(user, credential);
+    },
+
+    changePassword: async (currentPassword, newPassword) => {
+        const user = auth.currentUser;
+        if (!user) throw new Error('No user logged in');
+
+        try {
+            // Firebase usually requires re-authentication for sensitive operations
+            const credential = EmailAuthProvider.credential(user.email, currentPassword);
+            await reauthenticateWithCredential(user, credential);
+            await updatePassword(user, newPassword);
+            return true;
+        } catch (error) {
+            console.error('Change password error:', error);
+            if (error.code === 'auth/wrong-password') {
+                throw new Error('Invalid current password');
+            }
+            if (error.code === 'auth/weak-password') {
+                throw new Error('Password should be at least 6 characters');
+            }
+            if (error.code === 'auth/requires-recent-login') {
+                throw new Error('Please log in again to change password');
+            }
+            throw error;
+        }
     }
 };

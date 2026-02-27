@@ -55,6 +55,12 @@ export const translations = {
         'profile.confirmDeactivate': 'Are you sure you want to deactivate this member?',
         'profile.confirmActivate': 'Are you sure you want to activate this member?',
         'profile.loading': 'Loading...',
+        'profile.changePassword': 'Change Password',
+        'profile.currentPassword': 'Current Password',
+        'profile.newPassword': 'New Password',
+        'profile.confirmNewPassword': 'Confirm New Password',
+        'profile.passwordMismatch': 'Passwords do not match!',
+        'profile.passwordChanged': 'Password changed successfully!',
 
         // Events Page
         'events.title': 'Club Events',
@@ -276,6 +282,12 @@ export const translations = {
         'profile.confirmDeactivate': 'Tem certeza que deseja desativar este membro?',
         'profile.confirmActivate': 'Tem certeza que deseja ativar este membro?',
         'profile.loading': 'Carregando...',
+        'profile.changePassword': 'Alterar Senha',
+        'profile.currentPassword': 'Senha Atual',
+        'profile.newPassword': 'Nova Senha',
+        'profile.confirmNewPassword': 'Confirmar Nova Senha',
+        'profile.passwordMismatch': 'As senhas não coincidem!',
+        'profile.passwordChanged': 'Senha alterada com sucesso!',
 
         // Events Page
         'events.title': 'Eventos do Clube',

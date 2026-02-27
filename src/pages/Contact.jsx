@@ -19,50 +19,62 @@ const Contact = () => {
                     <p className="contact-message">{t('contact.message')}</p>
 
                     <div className="contact-details">
-                        <div className="contact-item">
-                            <div className="contact-icon">📞</div>
-                            <div className="contact-text">
-                                <h3>{t('contact.phone')}</h3>
-                                <a href={`tel:${settings.contact_phone?.replace(/[^\d+]/g, '')}`}>
-                                    {settings.contact_phone}
-                                </a>
+                        {settings.contact_phone && (
+                            <div className="contact-item">
+                                <div className="contact-icon">📞</div>
+                                <div className="contact-text">
+                                    <h3>{t('contact.phone')}</h3>
+                                    <a href={`tel:${settings.contact_phone.replace(/[^\d+]/g, '')}`}>
+                                        {settings.contact_phone}
+                                    </a>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className="contact-item">
-                            <div className="contact-icon">✉️</div>
-                            <div className="contact-text">
-                                <h3>{t('contact.email')}</h3>
-                                <a href={`mailto:${settings.contact_email}`}>{settings.contact_email}</a>
+                        {settings.contact_email && (
+                            <div className="contact-item">
+                                <div className="contact-icon">✉️</div>
+                                <div className="contact-text">
+                                    <h3>{t('contact.email')}</h3>
+                                    <a href={`mailto:${settings.contact_email}`}>{settings.contact_email}</a>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className="contact-item">
-                            <div className="contact-icon">📸</div>
-                            <div className="contact-text">
-                                <h3>{t('contact.social')}</h3>
-                                <a
-                                    href={settings.contact_instagram}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="instagram-link"
-                                >
-                                    @{instagramHandle}
-                                </a>
+                        {settings.contact_instagram && (
+                            <div className="contact-item">
+                                <div className="contact-icon">📸</div>
+                                <div className="contact-text">
+                                    <h3>{t('contact.social')}</h3>
+                                    <a
+                                        href={settings.contact_instagram}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="instagram-link"
+                                    >
+                                        @{instagramHandle}
+                                    </a>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
 
-                    <div className="contact-cta">
-                        <a
-                            href={settings.contact_instagram}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-primary"
-                        >
-                            📸 {t('contact.instagram')}
-                        </a>
-                    </div>
+                    {settings.contact_instagram && (
+                        <div className="contact-cta">
+                            <a
+                                href={settings.contact_instagram}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-primary"
+                            >
+                                📸 {t('contact.instagram')}
+                            </a>
+                        </div>
+                    )}
+
+                    {!settings.contact_phone && !settings.contact_email && !settings.contact_instagram && (
+                        <p className="no-contact-info">{t('contact.noInfo') || 'No contact information available at the moment.'}</p>
+                    )}
                 </div>
             </div>
 
@@ -139,6 +151,12 @@ const Contact = () => {
                 }
                 .instagram-link {
                     font-weight: 600;
+                }
+                .no-contact-info {
+                    text-align: center;
+                    color: var(--text-secondary);
+                    font-style: italic;
+                    margin: 2rem 0;
                 }
                 .contact-cta {
                     text-align: center;

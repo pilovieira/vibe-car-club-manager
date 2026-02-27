@@ -213,6 +213,7 @@ export const translations = {
         'contact.social': 'Social Media',
         'contact.instagram': 'Follow us on Instagram',
         'contact.message': 'Have questions? Want to join our next expedition? Reach out to us!',
+        'contact.noInfo': 'No contact information available at the moment.',
 
         // Gender
         'gender.label': 'Gender',
@@ -441,6 +442,7 @@ export const translations = {
         'contact.social': 'Redes Sociais',
         'contact.instagram': 'Siga-nos no Instagram',
         'contact.message': 'Tem dúvidas? Quer participar da nossa próxima expedição? Entre em contato!',
+        'contact.noInfo': 'Nenhuma informação de contato disponível no momento.',
 
         // Gender
         'gender.label': 'Gênero',

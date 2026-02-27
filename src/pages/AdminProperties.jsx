@@ -34,9 +34,6 @@ const AdminProperties = () => {
                 if (!props.app_title) {
                     props.app_title = 'Offroad Maringá';
                 }
-                if (!props.contact_phone) props.contact_phone = '(44) 3333-4444';
-                if (!props.contact_email) props.contact_email = 'contato@offroadmaringa.com.br';
-                if (!props.contact_instagram) props.contact_instagram = 'https://www.instagram.com/offroadmaringa/';
                 setProperties(props);
             } catch (err) {
                 console.error('Error fetching properties:', err);

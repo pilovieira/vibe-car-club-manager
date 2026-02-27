@@ -141,13 +141,112 @@ const Events = () => {
         return attendeeIds.map(id => members.find(m => m.id === id)).filter(Boolean);
     };
 
-    const filteredEvents = events.filter(event => {
-        if (showPastEvents) return true;
-        // If event.date has a T, it's already a full datetime string.
-        // Otherwise, add a late time to include the full day for simple dates.
-        const dateStr = event.date.includes('T') ? event.date : `${event.date}T23:59:59`;
-        return new Date(dateStr) >= new Date();
-    });
+    const renderEventCard = (event) => (
+        <div key={event.id} className="event-card-wrapper animate-fade-in">
+            <div className={`event-card shadow-sm event-type-${(event.eventType || '').replace(/\s+/g, '-')}`}>
+                <div className="event-card-content">
+                    <div className="event-date">
+                        {language === 'en' ? (
+                            <>
+                                <span className="month">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').toLocaleString('en-US', { month: 'short' })}</span>
+                                <span className="day">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').getDate()}</span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="day">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').getDate()}</span>
+                                <span className="month">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').toLocaleString('pt-BR', { month: 'short' })}</span>
+                            </>
+                        )}
+                        <span className="year">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').getFullYear()}</span>
+                        {event.date.includes('T') && (
+                            <span className="time">{new Date(event.date).toLocaleTimeString(language === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                        )}
+                    </div>
+                    <div className="event-body">
+                        <div className="event-info-header">
+                            <h2>{event.title}</h2>
+                            <div className="event-badge-row">
+                                <span className={`type-badge ${(event.eventType || 'soft trail').replace(/\s+/g, '-')}`}>
+                                    {t(`events.type.${(event.eventType || 'soft-trail').replace(/\s+/g, '-')}`)}
+                                </span>
+                            </div>
+                        </div>
+                        <p className="event-meta">📍 {event.location}</p>
+                        <p className="event-desc">{event.description}</p>
+
+                        <div className="attendees-section">
+                            <span className="attendees-label">{t('events.attendees')} ({event.attendees.length})</span>
+                            <div className="attendee-list">
+                                {event.attendees.length === 0 ? (
+                                    <span className="no-attendees">{t('events.beFirst') || 'Be the first to join!'}</span>
+                                ) : (
+                                    getAttendeeDetails(event.attendees).map(member => (
+                                        <div key={member.id} className="attendee-chip" title={member.name}>
+                                            <img
+                                                src={member.avatar}
+                                                alt={member.name}
+                                                className="attendee-avatar"
+                                            />
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="event-footer-actions">
+                    {user ? (
+                        <button
+                            className={`action-btn join-btn ${isAttending(event) ? 'attending' : ''}`}
+                            onClick={() => handleToggleEvent(event.id)}
+                            disabled={(!isAttending(event) && (user.status === 'inactive' || new Date(event.date.includes('T') ? event.date : event.date + 'T23:59:59') < new Date()))}
+                        >
+                            {isAttending(event)
+                                ? t('events.leave')
+                                : (new Date(event.date.includes('T') ? event.date : event.date + 'T23:59:59') < new Date()
+                                    ? t('events.ended')
+                                    : (user.status === 'inactive' ? t('events.inactiveWarning') : t('events.join')))}
+                        </button>
+                    ) : (
+                        <button className="action-btn join-btn disabled" disabled>{t('common.login') || 'Login'}</button>
+                    )}
+
+                    {user && (
+                        <button
+                            className="action-btn gallery-btn"
+                            onClick={() => navigate(`/events/${event.id}/gallery`)}
+                        >
+                            <FaImages /> <span>{t('events.gallery')}</span>
+                        </button>
+                    )}
+
+                    {isAdmin && (
+                        <button
+                            className="action-btn edit-btn"
+                            onClick={() => handleStartEdit(event)}
+                        >
+                            <span>✏️ {t('common.edit')}</span>
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    const upcomingEvents = events
+        .filter(event => {
+            const dateStr = event.date.includes('T') ? event.date : `${event.date}T23:59:59`;
+            return new Date(dateStr) >= new Date();
+        })
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    const pastEvents = events
+        .filter(event => {
+            const dateStr = event.date.includes('T') ? event.date : `${event.date}T23:59:59`;
+            return new Date(dateStr) < new Date();
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return (
         <div className="container events-page">
@@ -213,98 +312,44 @@ const Events = () => {
                 </div>
             )}
 
-            <div className="events-list">
+            <div className="events-list-container">
                 {dataLoading ? (
                     <div className="loader-container">
                         <div className="loader"></div>
                         <p className="loading-text">{t('common.loading') || 'Loading events...'}</p>
                     </div>
                 ) : (
-                    filteredEvents.map(event => (
-                        <div key={event.id} className={`event-card card event-type-${(event.eventType || '').replace(/\s+/g, '-')}`}>
-                            <div className="event-date">
-                                {language === 'en' ? (
-                                    <>
-                                        <span className="month">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').toLocaleString('en-US', { month: 'short' })}</span>
-                                        <span className="day">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').getDate()}</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="day">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').getDate()}</span>
-                                        <span className="month">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').toLocaleString('pt-BR', { month: 'short' })}</span>
-                                    </>
-                                )}
-                                <span className="year">{new Date(event.date.includes('T') ? event.date : event.date + 'T00:00:00').getFullYear()}</span>
-                                {event.date.includes('T') && (
-                                    <span className="time">{new Date(event.date).toLocaleTimeString(language === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                                )}
-                            </div>
-                            <div className="event-details">
-                                <div className="event-header-row">
-                                    <h2>{event.title}</h2>
-                                    <span className={`type-badge ${(event.eventType || 'soft trail').replace(/\s+/g, '-')}`}>
-                                        {t(`events.type.${(event.eventType || 'soft-trail').replace(/\s+/g, '-')}`)}
-                                    </span>
-                                </div>
-                                <p className="event-meta">📍 {event.location}</p>
-                                <p className="event-desc">{event.description}</p>
-
-                                <div className="attendees-section">
-                                    <span className="attendees-label">{t('events.attendees')} ({event.attendees.length}):</span>
-                                    <div className="attendee-list">
-                                        {event.attendees.length === 0 && <span className="text-secondary small">Be the first to join!</span>}
-                                        {getAttendeeDetails(event.attendees).map(member => (
-                                            <div key={member.id} className="attendee-chip">
-                                                <img
-                                                    src={member.avatar}
-                                                    alt={member.name}
-                                                    className="attendee-avatar"
-                                                />
-                                                <span className="attendee-name">{member.name}</span>
-                                            </div>
-                                        ))}
+                    <>
+                        {/* Upcoming Events Section */}
+                        <div className="events-section">
+                            <h2 className="section-title">{t('events.upcomingTitle')}</h2>
+                            <div className="events-list">
+                                {upcomingEvents.length === 0 ? (
+                                    <div className="no-events-hint">
+                                        <p>{t('events.noUpcoming') || 'No upcoming events planned.'}</p>
                                     </div>
-                                </div>
-                            </div>
-                            <div className="event-action">
-                                <div className="action-stack">
-                                    {user ? (
-                                        <button
-                                            className={`btn ${isAttending(event) ? 'btn-danger-outline' : 'btn-primary'}`}
-                                            onClick={() => handleToggleEvent(event.id)}
-                                            disabled={(!isAttending(event) && (user.status === 'inactive' || new Date(event.date.includes('T') ? event.date : event.date + 'T23:59:59') < new Date()))}
-                                        >
-                                            {isAttending(event)
-                                                ? t('events.leave')
-                                                : (new Date(event.date.includes('T') ? event.date : event.date + 'T23:59:59') < new Date()
-                                                    ? t('events.ended')
-                                                    : (user.status === 'inactive' ? t('events.inactiveWarning') : t('events.join')))}
-                                        </button>
-                                    ) : (
-                                        <span className="text-secondary">Login to Join</span>
-                                    )}
-
-                                    {user && (
-                                        <button
-                                            className="btn btn-secondary btn-gallery"
-                                            onClick={() => navigate(`/events/${event.id}/gallery`)}
-                                        >
-                                            <FaImages /> {t('events.gallery')}
-                                        </button>
-                                    )}
-
-                                    {isAdmin && (
-                                        <button
-                                            className="btn-edit-small"
-                                            onClick={() => handleStartEdit(event)}
-                                        >
-                                            ✏️ {t('events.editButton')}
-                                        </button>
-                                    )}
-                                </div>
+                                ) : (
+                                    upcomingEvents.map(event => renderEventCard(event))
+                                )}
                             </div>
                         </div>
-                    ))
+
+                        {/* Past Events Section */}
+                        {showPastEvents && (
+                            <div className="events-section past-events-section animate-fade-in">
+                                <h2 className="section-title section-title-past">{t('events.pastTitle')}</h2>
+                                <div className="events-list">
+                                    {pastEvents.length === 0 ? (
+                                        <div className="no-events-hint">
+                                            <p>{t('events.noPast') || 'No past events found.'}</p>
+                                        </div>
+                                    ) : (
+                                        pastEvents.map(event => renderEventCard(event))
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
@@ -369,205 +414,288 @@ const Events = () => {
             background: linear-gradient(135deg, var(--primary-semi), var(--bg-card));
             border-left: 4px solid var(--primary);
         }
-        .event-card.event-type-hard-trail {
-            background: linear-gradient(135deg, var(--primary-shadow), var(--bg-card));
-            border-left: 4px solid var(--primary-hover);
+        .events-list-container {
+            margin-top: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
         }
-        .event-card.event-type-soft-trail {
-            background: linear-gradient(135deg, var(--primary-glow), var(--bg-card));
-            border-left: 4px solid var(--accent);
+        .events-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
-        .event-card.event-type-members-meetup {
-            background: linear-gradient(135deg, var(--primary-glow), var(--bg-card));
-            border-left: 4px solid var(--success);
+        .section-title {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--glass-border), transparent);
+        }
+        .section-title-past {
+            color: var(--text-secondary);
+            opacity: 0.8;
+        }
+        .no-events-hint {
+            padding: 3rem;
+            text-align: center;
+            background: rgba(255,255,255,0.02);
+            border-radius: 1rem;
+            border: 2px dashed var(--glass-border);
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        .events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .event-card-wrapper {
+            transition: transform 0.2s ease;
+        }
+        .event-card-wrapper:hover {
+            transform: translateY(-4px);
+        }
+        .event-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .event-card-wrapper:hover .event-card {
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .event-card-content {
+            display: flex;
+            padding: 1.5rem;
+            gap: 1.5rem;
+        }
         .event-date {
+            min-width: 80px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            background: var(--bg-dark);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            min-width: 80px;
+            justify-content: flex-start;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
             border: 1px solid var(--glass-border);
+            height: fit-content;
         }
         .month {
-            color: var(--accent);
             text-transform: uppercase;
-            font-size: 0.875rem;
+            font-size: 0.7rem;
+            color: var(--accent);
+            letter-spacing: 0.1em;
             font-weight: 700;
         }
         .day {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.1;
+            margin: 0.2rem 0;
         }
         .year {
             font-size: 0.75rem;
             color: var(--text-secondary);
-            opacity: 0.8;
-            margin-top: 0.1rem;
+            opacity: 0.7;
         }
         .time {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-top: 0.5rem;
+            margin-top: 0.75rem;
             padding-top: 0.5rem;
             border-top: 1px solid var(--glass-border);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
             width: 100%;
             text-align: center;
         }
-        .event-details {
+        .event-body {
             flex: 1;
         }
-        .event-details h2 {
-            margin-bottom: 0.25rem;
+        .event-info-header {
+            margin-bottom: 0.75rem;
         }
-        .event-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.5rem;
+        .event-badge-row {
+            margin-top: 0.25rem;
+        }
+        .event-body h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.2;
         }
         .type-badge {
-            font-size: 0.7rem;
-            padding: 0.2rem 0.6rem;
-            border-radius: 1rem;
+            font-size: 0.65rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
             text-transform: uppercase;
-            font-weight: 700;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 800;
+            white-space: nowrap;
+            letter-spacing: 0.05em;
         }
+        /* Badge Colors */
+        .type-badge.soft-trail { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .type-badge.hard-trail { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .type-badge.members-meetup { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .type-badge.club-official-meetup { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+
         .event-meta {
             color: var(--text-secondary);
             font-size: 0.9rem;
             margin-bottom: 1rem;
-        }
-        .event-desc {
-            color: var(--text-primary);
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-        }
-        .attendees-section {
-            background: rgba(255,255,255,0.03);
-            padding: 1rem;
-            border-radius: 0.5rem;
-        }
-        .attendees-label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-        .attendee-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-        .attendee-chip {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(255,255,255,0.05);
-            padding: 0.25rem 0.75rem 0.25rem 0.25rem;
-            border-radius: 2rem;
-            border: 1px solid var(--glass-border);
-            font-size: 0.85rem;
-        }
-        .attendee-avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-        }
-        .attendee-name {
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-        
-        @media (max-width: 768px) {
-            .page-header {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 1.5rem;
-            }
-            .header-left {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.75rem;
-            }
-            .event-card {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 1.5rem;
-                padding: 1.5rem;
-            }
-            .event-date {
-                flex-direction: row;
-                justify-content: center;
-                gap: 0.5rem;
-                width: 100%;
-                min-width: unset;
-            }
-            .event-action {
-                width: 100%;
-                margin-top: 1rem;
-            }
-            .action-stack {
-                width: 100%;
-                align-items: stretch;
-            }
-            .btn {
-                width: 100%;
-            }
-            .event-header-row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .action-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            align-items: flex-end;
-        }
-        
-        .btn-edit-small {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            color: var(--text-secondary);
-            padding: 0.4rem 0.8rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 0.4rem;
         }
-        
-        .btn-edit-small:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--accent);
-            border-color: var(--accent);
+        .event-desc {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+        .attendees-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--glass-border);
+        }
+        .attendees-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .attendee-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: -0.5rem; /* Overlap effect */
+        }
+        .attendee-chip {
+            margin-right: -0.5rem;
+            transition: transform 0.2s;
+            cursor: help;
+        }
+        .attendee-chip:hover {
+            transform: translateY(-2px);
+            z-index: 10;
+        }
+        .attendee-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--bg-card);
+            background: var(--bg-dark);
+            object-fit: cover;
+        }
+        .no-attendees {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            opacity: 0.7;
         }
 
-        .btn-danger-outline {
-            background: transparent;
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+        .event-footer-actions {
+            display: flex;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.1);
         }
-        .btn-danger-outline:hover {
+        .action-btn {
+            flex: 1;
+            padding: 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .action-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+        }
+        .action-btn:not(:last-child) {
+            border-right: 1px solid var(--glass-border);
+        }
+        
+        .join-btn {
+            flex: 2;
+            background: var(--primary-glow);
+            color: var(--primary);
+        }
+        .join-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .join-btn.attending {
             background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        .join-btn.attending:hover {
+            background: #ef4444;
+            color: white;
+        }
+        .join-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary);
+        }
+        
+        .gallery-btn:hover { color: var(--accent); }
+        .edit-btn:hover { color: var(--accent); }
+
+        @media (max-width: 640px) {
+            .event-card-content {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            .event-date {
+                flex-direction: row;
+                width: 100%;
+                justify-content: center;
+                gap: 1rem;
+                padding: 0.5rem;
+            }
+            .time {
+                border-top: none;
+                border-left: 1px solid var(--glass-border);
+                margin-top: 0;
+                padding-top: 0;
+                padding-left: 1rem;
+                width: auto;
+            }
+            .event-body h2 {
+                font-size: 1.25rem;
+            }
+            .attendees-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+            .action-btn {
+                padding: 0.75rem;
+                font-size: 0.8rem;
+            }
         }
       `}</style>
         </div>

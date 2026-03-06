@@ -32,6 +32,8 @@ export const SettingsProvider = ({ children }) => {
             }));
         } catch (err) {
             console.error('Error fetching settings:', err);
+            // If property load failed refresh the page
+            window.location.reload();
         } finally {
             setLoading(false);
         }

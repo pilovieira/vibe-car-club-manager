@@ -22,11 +22,29 @@ import { useSettings } from './context/SettingsContext';
 import { useEffect } from 'react';
 
 function App() {
-  const { settings } = useSettings();
+  const { settings, loading } = useSettings();
 
   useEffect(() => {
     document.title = settings.app_title;
   }, [settings.app_title]);
+
+  if (loading) {
+    return (
+      <div style={{
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#1a1a1a',
+        color: '#fff',
+        fontSize: '1.2rem',
+        fontFamily: 'sans-serif'
+      }}>
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <Router>

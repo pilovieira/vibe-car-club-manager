@@ -15,6 +15,8 @@ const CustomPage = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
+    const [showLinkModal, setShowLinkModal] = useState(false);
+    const [linkData, setLinkData] = useState({ text: '', url: '' });
     const editorRef = useRef(null);
     const fileInputRef = useRef(null);
 
@@ -77,8 +79,28 @@ const CustomPage = () => {
     };
 
     const addLink = () => {
-        const url = prompt('Enter the URL (e.g., https://example.com):');
-        if (url) execCommand('createLink', url);
+        const selection = window.getSelection();
+        const selectedText = selection.toString();
+        setLinkData({ text: selectedText, url: '' });
+        setShowLinkModal(true);
+    };
+
+    const handleLinkSubmit = (e) => {
+        e.preventDefault();
+        if (!linkData.url) return;
+
+        if (editorRef.current) {
+            editorRef.current.focus();
+
+            // If text is provided, insert a linked text, otherwise just the URL
+            const textToInsert = linkData.text || linkData.url;
+            const linkHtml = `<a href="${linkData.url}" target="_blank" rel="noopener noreferrer">${textToInsert}</a>`;
+
+            document.execCommand('insertHTML', false, linkHtml);
+        }
+
+        setShowLinkModal(false);
+        setLinkData({ text: '', url: '' });
     };
 
     const addImage = () => {
@@ -207,7 +229,79 @@ const CustomPage = () => {
                 />
             </div>
 
+            {showLinkModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content card animate-fade-in">
+                        <h3>{t('pageEditor.addLink')}</h3>
+                        <form onSubmit={handleLinkSubmit} className="form-vertical">
+                            <div className="form-group">
+                                <label>{t('pageEditor.linkText')}</label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    value={linkData.text}
+                                    onChange={e => setLinkData({ ...linkData, text: e.target.value })}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>{t('pageEditor.linkUrl')}</label>
+                                <input
+                                    type="url"
+                                    className="input-field"
+                                    value={linkData.url}
+                                    onChange={e => setLinkData({ ...linkData, url: e.target.value })}
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+                            <div className="form-actions">
+                                <button type="button" className="btn btn-outline" onClick={() => setShowLinkModal(false)}>
+                                    {t('common.cancel')}
+                                </button>
+                                <button type="submit" className="btn btn-primary">
+                                    {t('common.save')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             <style>{`
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                    backdrop-filter: blur(4px);
+                }
+                .modal-content {
+                    width: 100%;
+                    max-width: 400px;
+                    padding: 2rem;
+                }
+                .form-vertical {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                }
+                .form-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+                .form-actions {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 1rem;
+                    margin-top: 0.5rem;
+                }
                 .custom-page {
                     padding-top: 2rem;
                     max-width: 900px;
@@ -287,6 +381,13 @@ const CustomPage = () => {
                 @keyframes spin {
                     from { transform: rotate(0deg); }
                     to { transform: rotate(360deg); }
+                }
+                .animate-fade-in {
+                    animation: fadeIn 0.3s ease-out;
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
             `}</style>
         </div>

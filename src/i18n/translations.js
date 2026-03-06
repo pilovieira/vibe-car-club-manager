@@ -206,6 +206,9 @@ export const translations = {
         'pageEditor.confirmDeleteImage': 'Are you sure you want to delete this image?',
         'pageEditor.errorUpload': 'Error uploading image',
         'pageEditor.uploading': 'Uploading...',
+        'pageEditor.addLink': 'Add Link',
+        'pageEditor.linkText': 'Link Text',
+        'pageEditor.linkUrl': 'Link URL (e.g., https://...)',
 
         // Events extra
         'events.beFirst': 'Be the first to join!',
@@ -504,6 +507,9 @@ export const translations = {
         'pageEditor.confirmDeleteImage': 'Tem certeza que deseja excluir esta imagem?',
         'pageEditor.errorUpload': 'Erro ao enviar imagem',
         'pageEditor.uploading': 'Enviando...',
+        'pageEditor.addLink': 'Adicionar Link',
+        'pageEditor.linkText': 'Texto do Link',
+        'pageEditor.linkUrl': 'URL do Link (ex: https://...)',
 
         // Events extra
         'events.beFirst': 'Seja o primeiro a participar!',
@@ -802,6 +808,9 @@ export const translations = {
         'pageEditor.confirmDeleteImage': '¿Estás seguro de que deseas eliminar esta imagen?',
         'pageEditor.errorUpload': 'Error al subir la imagen',
         'pageEditor.uploading': 'Subiendo...',
+        'pageEditor.addLink': 'Añadir Enlace',
+        'pageEditor.linkText': 'Texto del Enlace',
+        'pageEditor.linkUrl': 'URL del Enlace (ej: https://...)',
 
         // Events extra
         'events.beFirst': '¡Sé el primero en unirte!',

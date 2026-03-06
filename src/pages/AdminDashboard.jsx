@@ -65,6 +65,12 @@ const AdminDashboard = () => {
                     <p>{t('admin.logBookDesc')}</p>
                 </Link>
 
+                <Link to="/admin/custom-pages" className="dashboard-card">
+                    <div className="icon">📄</div>
+                    <h2>{t('admin.customPages')}</h2>
+                    <p>{t('admin.customPagesDesc')}</p>
+                </Link>
+
             </div>
 
 

@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { mockService } from '../services/mockData';
 import { FaEdit, FaSave, FaSpinner, FaBold, FaItalic, FaListUl, FaListOl, FaLink, FaImage, FaUpload } from 'react-icons/fa';
 
-const About = () => {
+const CustomPage = () => {
+    const { path } = useParams();
     const { isAdmin, user } = useAuth();
     const { t } = useLanguage();
-    const [content, setContent] = useState('');
+    const navigate = useNavigate();
+    const [pageData, setPageData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -16,44 +19,61 @@ const About = () => {
     const fileInputRef = useRef(null);
 
     useEffect(() => {
+        if (!isLoading && pageData && editorRef.current && !isEditing) {
+            editorRef.current.innerHTML = pageData.content || '';
+        }
+    }, [isLoading, pageData, isEditing]);
+
+    useEffect(() => {
         const fetchContent = async () => {
+            setIsLoading(true);
             try {
-                const data = await mockService.getPageContent('about');
-                setContent(data.content || '');
+                const pageId = path.replace(/\//g, '_').toLowerCase();
+                const data = await mockService.getPageContent(pageId);
+                if (data) {
+                    setPageData(data);
+                } else {
+                    // Page not found
+                    console.error('Page not found:', path);
+                    navigate('/');
+                }
             } catch (err) {
-                console.error('Error fetching about content:', err);
+                console.error('Error fetching custom page content:', err);
+                navigate('/');
             } finally {
                 setIsLoading(false);
             }
         };
         fetchContent();
-    }, []);
+        setIsEditing(false); // Reset editing state when path changes
+    }, [path, navigate]);
 
     const handleSave = async () => {
         const newContent = editorRef.current.innerHTML;
         const imageUrls = Array.from(editorRef.current.querySelectorAll('img')).map(img => img.src);
         setIsSaving(true);
         try {
-            await mockService.updatePageContent('about', newContent, imageUrls);
-            setContent(newContent);
+            await mockService.updatePageContent(pageData.id, newContent, imageUrls);
+            setPageData({ ...pageData, content: newContent, images: imageUrls });
             setIsEditing(false);
 
             // Create log
             await mockService.createLog({
                 userId: user.id || user.uid,
                 userName: user.name || user.displayName || user.email,
-                description: `Updated About Us page content`
+                description: `Updated custom page content: ${pageData.title}`
             });
         } catch (err) {
-            console.error('Error saving about content:', err);
+            console.error('Error saving page content:', err);
+            alert(t('common.error') || 'Error saving content');
         } finally {
             setIsSaving(false);
         }
     };
 
     const execCommand = (command, value = null) => {
-        document.execCommand(command, false, value);
         if (editorRef.current) editorRef.current.focus();
+        document.execCommand(command, false, value);
     };
 
     const addLink = () => {
@@ -72,18 +92,33 @@ const About = () => {
 
         setIsUploading(true);
         try {
-            const fileName = `about_page_${Date.now()}_${file.name}`;
-            const path = `pages/about/${fileName}`;
-            const downloadUrl = await mockService.uploadImage(path, file);
+            const fileName = `custom_page_${pageData.id}_${Date.now()}_${file.name}`;
+            const storagePath = `pages/${pageData.id}/${fileName}`;
+            const downloadUrl = await mockService.uploadImage(storagePath, file);
 
-            // Insert image at cursor
-            execCommand('insertImage', downloadUrl);
+            // Ensure editor has focus
+            if (editorRef.current) {
+                editorRef.current.focus();
+                // If it's the first image/content, it might need an extra push
+                document.execCommand('insertImage', false, downloadUrl);
+
+                // Fallback for some browsers if execCommand fails
+                const img = editorRef.current.querySelector(`img[src="${downloadUrl}"]`);
+                if (!img) {
+                    // Manually append if selection was lost
+                    const newImg = document.createElement('img');
+                    newImg.src = downloadUrl;
+                    newImg.style.maxWidth = '100%';
+                    editorRef.current.appendChild(newImg);
+                    editorRef.current.appendChild(document.createElement('br'));
+                }
+            }
 
             // Optional: reset file input
             e.target.value = '';
         } catch (err) {
             console.error('Error uploading image:', err);
-            alert(t('about.errorUpload'));
+            alert(t('pageEditor.errorUpload'));
         } finally {
             setIsUploading(false);
         }
@@ -92,17 +127,12 @@ const About = () => {
     const handleEditorClick = async (e) => {
         if (!isEditing) return;
 
-        // If clicking an image, confirm deletion
         if (e.target.tagName === 'IMG') {
             const img = e.target;
-            if (window.confirm(t('about.confirmDeleteImage'))) {
+            if (window.confirm(t('pageEditor.confirmDeleteImage'))) {
                 const src = img.src;
-
-                // Check if it's a storage image
                 if (src.includes('firebasestorage.googleapis.com')) {
                     try {
-                        // Extract path from storage URL if needed or just use the whole URL if deleteObject supports it (some SDKs do)
-                        // Actually deleteImageByUrl in mockData.js uses ref(storage, url) which modular SDK supports
                         await mockService.deleteImageByUrl(src);
                     } catch (err) {
                         console.error('Error deleting from storage:', err);
@@ -117,28 +147,30 @@ const About = () => {
         return <div className="container" style={{ paddingTop: '2rem' }}>{t('common.loading')}</div>;
     }
 
+    if (!pageData) return null;
+
     return (
-        <div className="container about-page">
+        <div className="container custom-page">
             <header className="page-header">
-                <h1 className="page-title">{t('about.title')}</h1>
+                <h1 className="page-title">{pageData.title}</h1>
                 {isAdmin && (
                     <div className="admin-actions">
                         {!isEditing ? (
                             <button className="btn btn-outline" onClick={() => setIsEditing(true)}>
-                                <FaEdit /> {t('about.edit')}
+                                <FaEdit /> {t('pageEditor.edit')}
                             </button>
                         ) : (
                             <button className="btn btn-primary" onClick={handleSave} disabled={isSaving}>
-                                {isSaving ? <FaSpinner className="icon-spin" /> : <FaSave />} {t('about.save')}
+                                {isSaving ? <FaSpinner className="icon-spin" /> : <FaSave />} {t('pageEditor.save')}
                             </button>
                         )}
                     </div>
                 )}
             </header>
 
-            {isAdmin && <p className="admin-hint text-secondary">{t('about.hint')}</p>}
+            {isAdmin && <p className="admin-hint text-secondary">{t('pageEditor.hint')}</p>}
 
-            <div className={`card about-content-card ${isEditing ? 'editing' : ''}`}>
+            <div className={`card custom-page-content-card ${isEditing ? 'editing' : ''}`}>
                 {isEditing && (
                     <div className="editor-toolbar">
                         <button onClick={() => execCommand('bold')} title="Bold"><FaBold /></button>
@@ -147,7 +179,7 @@ const About = () => {
                         <button onClick={() => execCommand('insertOrderedList')} title="Ordered List"><FaListOl /></button>
                         <button onClick={addLink} title="Add Link"><FaLink /></button>
                         <button onClick={addImage} title="Add Image URL"><FaImage /></button>
-                        <button onClick={() => fileInputRef.current?.click()} title={t('about.uploadImage')} disabled={isUploading}>
+                        <button onClick={() => fileInputRef.current?.click()} title={t('pageEditor.uploadImage')} disabled={isUploading}>
                             {isUploading ? <FaSpinner className="icon-spin" /> : <FaUpload />}
                         </button>
                     </div>
@@ -163,10 +195,10 @@ const About = () => {
 
                 <div
                     ref={editorRef}
-                    className="about-content"
+                    className="custom-page-content"
                     contentEditable={isEditing}
                     onClick={handleEditorClick}
-                    dangerouslySetInnerHTML={{ __html: content }}
+                    onInput={() => {/* Triggered on every change, but we read on save */ }}
                     style={{
                         outline: 'none',
                         minHeight: '200px',
@@ -176,7 +208,7 @@ const About = () => {
             </div>
 
             <style>{`
-                .about-page {
+                .custom-page {
                     padding-top: 2rem;
                     max-width: 900px;
                 }
@@ -185,11 +217,11 @@ const About = () => {
                     font-size: 0.9rem;
                     font-style: italic;
                 }
-                .about-content-card {
+                .custom-page-content-card {
                     padding: 2.5rem;
                     line-height: 1.8;
                 }
-                .about-content-card.editing {
+                .custom-page-content-card.editing {
                     padding: 0;
                 }
                 .editor-toolbar {
@@ -218,34 +250,34 @@ const About = () => {
                     background: var(--primary);
                     color: white;
                 }
-                .about-content {
+                .custom-page-content {
                     font-size: 1.1rem;
                 }
-                .about-content h1, .about-content h2, .about-content h3 {
+                .custom-page-content h1, .custom-page-content h2, .custom-page-content h3 {
                     margin-top: 2rem;
                     margin-bottom: 1rem;
                 }
-                .about-content p {
+                .custom-page-content p {
                     margin-bottom: 1.5rem;
                 }
-                .about-content ul, .about-content ol {
+                .custom-page-content ul, .custom-page-content ol {
                     margin-bottom: 1.5rem;
                     padding-left: 2rem;
                 }
-                .about-content img {
+                .custom-page-content img {
                     max-width: 100%;
                     border-radius: 0.5rem;
                     margin: 1.5rem 0;
                 }
-                .about-content-card.editing .about-content img {
+                .custom-page-content-card.editing .custom-page-content img {
                     cursor: pointer;
                     transition: all 0.2s;
                 }
-                .about-content-card.editing .about-content img:hover {
+                .custom-page-content-card.editing .custom-page-content img:hover {
                     outline: 3px solid #ef4444;
                     opacity: 0.8;
                 }
-                .about-content a {
+                .custom-page-content a {
                     color: var(--primary);
                     text-decoration: underline;
                 }
@@ -261,4 +293,4 @@ const About = () => {
     );
 };
 
-export default About;
+export default CustomPage;

@@ -9,7 +9,7 @@ import { FaGlobe, FaChevronDown } from 'react-icons/fa';
 const Navbar = () => {
   const { user, login, logout, isAdmin } = useAuth();
   const { language, setLanguage, t } = useLanguage();
-  const { settings } = useSettings();
+  const { settings, customPages } = useSettings();
   const navigate = useNavigate();
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -72,10 +72,14 @@ const Navbar = () => {
 
         <div className={`nav-content ${showMobileMenu ? 'show' : ''}`}>
           <div className="nav-links">
-            <Link to="/about" className="nav-link" onClick={handleNavClick}>{t('nav.about')}</Link>
             <Link to="/members" className="nav-link" onClick={handleNavClick}>{t('nav.members')}</Link>
             <Link to="/events" className="nav-link" onClick={handleNavClick}>{t('nav.events')}</Link>
             <Link to="/contact" className="nav-link" onClick={handleNavClick}>{t('nav.contact')}</Link>
+            {customPages?.map(page => (
+              <Link key={page.id} to={`/pages/${page.path}`} className="nav-link" onClick={handleNavClick}>
+                {page.title}
+              </Link>
+            ))}
             {isAdmin && <Link to="/admin" className="nav-link admin-link" onClick={handleNavClick}>{t('nav.admin')}</Link>}
           </div>
 

@@ -22,14 +22,19 @@ export const SettingsProvider = ({ children }) => {
         home_description: ''
     });
     const [loading, setLoading] = useState(true);
+    const [customPages, setCustomPages] = useState([]);
 
     const fetchSettings = async () => {
         try {
-            const props = await mockService.getProperties();
+            const [props, pages] = await Promise.all([
+                mockService.getProperties(),
+                mockService.getCustomPages()
+            ]);
             setSettings(prev => ({
                 ...prev,
                 ...props
             }));
+            setCustomPages(pages);
         } catch (err) {
             console.error('Error fetching settings:', err);
             // If property load failed refresh the page
@@ -52,6 +57,7 @@ export const SettingsProvider = ({ children }) => {
 
     const value = {
         settings,
+        customPages,
         loading,
         refreshSettings: fetchSettings,
         updateSetting

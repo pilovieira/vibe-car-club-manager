@@ -305,19 +305,34 @@ export const mockService = {
     },
 
     // Page Content Management
+    getCustomPages: async () => {
+        const querySnapshot = await getDocs(collection(db, 'pages'));
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
     getPageContent: async (pageId) => {
         const docRef = doc(db, 'pages', pageId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             return { id: docSnap.id, ...docSnap.data() };
         }
-        return { id: pageId, content: '' };
+        return null; // Return null if not found
     },
 
-    updatePageContent: async (pageId, content, images = []) => {
+    updatePageContent: async (pageId, content, images = [], title = '', path = '') => {
         const docRef = doc(db, 'pages', pageId);
-        await setDoc(docRef, { content, images, updatedAt: new Date().toISOString() }, { merge: true });
-        return { id: pageId, content, images };
+        const data = { content, images, updatedAt: new Date().toISOString() };
+        if (title) data.title = title;
+        if (path) data.path = path;
+
+        await setDoc(docRef, data, { merge: true });
+        return { id: pageId, ...data };
+    },
+
+    deleteCustomPage: async (pageId) => {
+        const docRef = doc(db, 'pages', pageId);
+        await deleteDoc(docRef);
+        return { id: pageId };
     },
 
     // Storage

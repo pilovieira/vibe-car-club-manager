@@ -12,10 +12,11 @@ import AdminMonthlySummary from './pages/AdminMonthlySummary';
 import AdminGlobalBalance from './pages/AdminGlobalBalance';
 import AdminProperties from './pages/AdminProperties';
 import AdminLogBook from './pages/AdminLogBook';
+import AdminCustomPages from './pages/AdminCustomPages';
 import Events from './pages/Events';
 import EventGallery from './pages/EventGallery';
 import Contact from './pages/Contact';
-import About from './pages/About';
+import CustomPage from './pages/CustomPage';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -70,11 +71,12 @@ function App() {
             <Route path="admin/global-balance" element={<AdminGlobalBalance />} />
             <Route path="admin/properties" element={<AdminProperties />} />
             <Route path="admin/logbook" element={<AdminLogBook />} />
+            <Route path="admin/custom-pages" element={<AdminCustomPages />} />
           </Route>
 
 
           <Route path="contact" element={<Contact />} />
-          <Route path="about" element={<About />} />
+          <Route path="pages/:path" element={<CustomPage />} />
           <Route path="login" element={<Login />} />
 
         </Route>

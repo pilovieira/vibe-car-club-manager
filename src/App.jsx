@@ -15,7 +15,6 @@ import AdminLogBook from './pages/AdminLogBook';
 import AdminCustomPages from './pages/AdminCustomPages';
 import Events from './pages/Events';
 import EventGallery from './pages/EventGallery';
-import Contact from './pages/Contact';
 import CustomPage from './pages/CustomPage';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -75,7 +74,6 @@ function App() {
           </Route>
 
 
-          <Route path="contact" element={<Contact />} />
           <Route path="pages/:path" element={<CustomPage />} />
           <Route path="login" element={<Login />} />
 

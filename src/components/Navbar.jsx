@@ -74,7 +74,6 @@ const Navbar = () => {
           <div className="nav-links">
             <Link to="/members" className="nav-link" onClick={handleNavClick}>{t('nav.members')}</Link>
             <Link to="/events" className="nav-link" onClick={handleNavClick}>{t('nav.events')}</Link>
-            <Link to="/contact" className="nav-link" onClick={handleNavClick}>{t('nav.contact')}</Link>
             {customPages?.map(page => (
               <Link key={page.id} to={`/pages/${page.path}`} className="nav-link" onClick={handleNavClick}>
                 {getTranslatedTitle(page.title)}

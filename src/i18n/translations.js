@@ -7,7 +7,7 @@ export const translations = {
         'nav.admin': 'Admin',
         'nav.logout': 'Logout',
         'nav.login': 'Login',
-        'nav.contact': 'Contact',
+
         'nav.logo': 'App Title',
 
         // Home Page
@@ -246,12 +246,7 @@ export const translations = {
         'settings.logoUploaded': 'App logo updated successfully!',
         'settings.homeDesc': 'Home Description',
         'settings.homeDescDesc': 'Description displayed in the home page hero section.',
-        'settings.contactPhone': 'Contact Phone',
-        'settings.contactPhoneDesc': 'Phone number displayed on the contact page.',
-        'settings.contactEmail': 'Contact Email',
-        'settings.contactEmailDesc': 'Email address displayed on the contact page.',
-        'settings.contactInstagram': 'Instagram Link',
-        'settings.contactInstagramDesc': 'Full URL to the Instagram profile.',
+
         'settings.noLogo': 'No Logo',
         'settings.theme.mud': 'Mud (Brown)',
         'settings.theme.day': 'Day (Light)',
@@ -278,15 +273,7 @@ export const translations = {
         'common.clear': 'Clear',
         'common.upload': 'Upload',
 
-        // Contact Page
-        'contact.title': 'Contact Us',
-        'contact.subtitle': 'Get in Touch',
-        'contact.phone': 'Phone',
-        'contact.email': 'Email',
-        'contact.social': 'Social Media',
-        'contact.instagram': 'Follow us on Instagram',
-        'contact.message': 'Have questions? Want to join our next expedition? Reach out to us!',
-        'contact.noInfo': 'No contact information available at the moment.',
+
 
         // Gender & Roles
         'gender.label': 'Gender',
@@ -316,7 +303,7 @@ export const translations = {
         'nav.admin': 'Admin',
         'nav.logout': 'Sair',
         'nav.login': 'Entrar',
-        'nav.contact': 'Contato',
+
         'nav.logo': 'Título do App',
 
         // Home Page
@@ -555,12 +542,7 @@ export const translations = {
         'settings.logoUploaded': 'Logo do app atualizado com sucesso!',
         'settings.homeDesc': 'Descrição da Home',
         'settings.homeDescDesc': 'Descrição exibida na seção hero da página inicial.',
-        'settings.contactPhone': 'Telefone de Contato',
-        'settings.contactPhoneDesc': 'Número de telefone exibido na página de contato.',
-        'settings.contactEmail': 'E-mail de Contato',
-        'settings.contactEmailDesc': 'Endereço de e-mail exibido na página de contato.',
-        'settings.contactInstagram': 'Link do Instagram',
-        'settings.contactInstagramDesc': 'URL completa para o perfil do Instagram.',
+
         'settings.noLogo': 'Sem Logo',
         'settings.theme.mud': 'Lama (Marrom)',
         'settings.theme.day': 'Dia (Claro)',
@@ -587,15 +569,7 @@ export const translations = {
         'common.clear': 'Limpar',
         'common.upload': 'Carregar',
 
-        // Contact Page
-        'contact.title': 'Fale Conosco',
-        'contact.subtitle': 'Entre em Contato',
-        'contact.phone': 'Telefone',
-        'contact.email': 'Email',
-        'contact.social': 'Redes Sociais',
-        'contact.instagram': 'Siga-nos no Instagram',
-        'contact.message': 'Tem dúvidas? Quer participar da nossa próxima expedição? Entre em contato!',
-        'contact.noInfo': 'Nenhuma informação de contato disponível no momento.',
+
 
         // Gender & Roles
         'gender.label': 'Gênero',
@@ -625,7 +599,7 @@ export const translations = {
         'nav.admin': 'Admin',
         'nav.logout': 'Salir',
         'nav.login': 'Entrar',
-        'nav.contact': 'Contacto',
+
         'nav.logo': 'Título del App',
 
         // Home Page
@@ -864,12 +838,7 @@ export const translations = {
         'settings.logoUploaded': '¡Logo del app actualizado con éxito!',
         'settings.homeDesc': 'Descripción de Inicio',
         'settings.homeDescDesc': 'Descripción mostrada en la sección principal de la página de inicio.',
-        'settings.contactPhone': 'Teléfono de Contacto',
-        'settings.contactPhoneDesc': 'Número de teléfono mostrado en la página de contacto.',
-        'settings.contactEmail': 'Correo de Contacto',
-        'settings.contactEmailDesc': 'Dirección de correo mostrada en la página de contacto.',
-        'settings.contactInstagram': 'Enlace de Instagram',
-        'settings.contactInstagramDesc': 'URL completa al perfil de Instagram.',
+
         'settings.noLogo': 'Sin Logo',
         'settings.theme.mud': 'Barro (Marrón)',
         'settings.theme.day': 'Día (Claro)',
@@ -895,16 +864,6 @@ export const translations = {
         'common.close': 'Cerrar',
         'common.clear': 'Limpiar',
         'common.upload': 'Subir',
-
-        // Contact Page
-        'contact.title': 'Contáctenos',
-        'contact.subtitle': 'Póngase en Contacto',
-        'contact.phone': 'Teléfono',
-        'contact.email': 'Correo',
-        'contact.social': 'Redes Sociales',
-        'contact.instagram': 'Síguenos en Instagram',
-        'contact.message': '¿Tiene preguntas? ¿Quiere unirse a nuestra próxima expedición? ¡Contáctenos!',
-        'contact.noInfo': 'No hay información de contacto disponible en este momento.',
 
         // Gender & Roles
         'gender.label': 'Género',

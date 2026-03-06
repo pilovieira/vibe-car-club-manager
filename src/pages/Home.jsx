@@ -24,30 +24,12 @@ const Home = () => {
           </div>
           <h1 className="hero-title">{firstPart} <span className="text-gradient">{secondPart}</span>.</h1>
           <p className="hero-subtitle">
-            {t('home.subtitle')}
+            {settings.home_description}
           </p>
           <div className="hero-buttons">
             <Link to="/members" className="btn btn-primary hero-btn">{t('home.exploreMembers')}</Link>
             <Link to="/events" className="btn btn-outline hero-btn">{t('home.upcomingEvents')}</Link>
           </div>
-        </div>
-      </section>
-
-      <section className="features container">
-        <div className="feature-card">
-          <div className="feature-icon">🚙</div>
-          <h3>{t('home.feature1.title')}</h3>
-          <p>{t('home.feature1.desc')}</p>
-        </div>
-        <div className="feature-card">
-          <div className="feature-icon">⛰️</div>
-          <h3>{t('home.feature2.title')}</h3>
-          <p>{t('home.feature2.desc')}</p>
-        </div>
-        <div className="feature-card">
-          <div className="feature-icon">🤝</div>
-          <h3>{t('home.feature3.title')}</h3>
-          <p>{t('home.feature3.desc')}</p>
         </div>
       </section>
 
@@ -87,37 +69,6 @@ const Home = () => {
         .hero-btn {
           padding: 0.75rem 2rem;
           font-size: 1.1rem;
-        }
-        .features {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 2rem;
-          padding: 4rem 1rem;
-        }
-        .feature-card {
-            background: var(--bg-card);
-            padding: 2rem;
-            border-radius: 1rem;
-            border: 1px solid var(--glass-border);
-            transition: transform 0.3s;
-        }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-        }
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-        p {
-            margin-bottom: 0.5rem;
-        }
-        p {
-            color: var(--text-secondary);
         }
         .hero-logo-wrapper {
             display: flex;

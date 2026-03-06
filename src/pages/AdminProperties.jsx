@@ -168,6 +168,30 @@ const AdminProperties = () => {
 
                     <div className="setting-item">
                         <div className="setting-info">
+                            <h3>{t('settings.homeDesc') || 'Home Page Description'}</h3>
+                            <p>{t('settings.homeDescDesc') || 'The text displayed on the home page hero section.'}</p>
+                        </div>
+                        <div className="setting-action" style={{ flex: 1, maxWidth: '500px' }}>
+                            <div className="input-group" style={{ width: '100%' }}>
+                                <textarea
+                                    className="input-field"
+                                    value={properties.home_description || ''}
+                                    onChange={(e) => setProperties({ ...properties, home_description: e.target.value })}
+                                    style={{ width: '100%', minHeight: '80px', textAlign: 'left', padding: '0.75rem', borderRadius: '0.5rem' }}
+                                />
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => handleUpdate('home_description', properties.home_description)}
+                                    disabled={saving}
+                                >
+                                    {saving ? t('common.saving') : t('common.save')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="setting-item">
+                        <div className="setting-info">
                             <h3>{t('settings.monthlyContribution') || 'Monthly Contribution Value'}</h3>
                             <p>{t('settings.monthlyContributionDesc') || 'Standard amount charged to members each month.'}</p>
                         </div>

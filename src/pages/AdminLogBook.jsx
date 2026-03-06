@@ -9,6 +9,8 @@ const AdminLogBook = () => {
     const { t, language } = useLanguage();
     const [logs, setLogs] = useState([]);
     const [dataLoading, setDataLoading] = useState(true);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     useEffect(() => {
         const fetchLogs = async () => {
@@ -43,46 +45,128 @@ const AdminLogBook = () => {
                 <h1 className="page-title">{t('admin.logBook')}</h1>
             </header>
 
+            <div className="card filter-card">
+                <div className="filter-group">
+                    <div className="filter-item">
+                        <label>{t('log.startDate') || 'Start Date'}</label>
+                        <input
+                            type="date"
+                            className="input-field"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                        />
+                    </div>
+                    <div className="filter-item">
+                        <label>{t('log.endDate') || 'End Date'}</label>
+                        <input
+                            type="date"
+                            className="input-field"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                        />
+                    </div>
+                    <button
+                        className="btn btn-outline"
+                        onClick={() => { setStartDate(''); setEndDate(''); }}
+                    >
+                        {t('common.clear') || 'Clear'}
+                    </button>
+                </div>
+            </div>
+
             <div className="card log-list-card">
-                <table className="log-table">
-                    <thead>
-                        <tr>
-                            <th>{t('log.date')}</th>
-                            <th>{t('log.user')}</th>
-                            <th>{t('log.description')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {logs.length === 0 ? (
+                <div className="log-table-container">
+                    <table className="log-table">
+                        <thead>
                             <tr>
-                                <td colSpan="3" className="text-center">{t('contributions.noHistory')}</td>
+                                <th>{t('log.date')}</th>
+                                <th>{t('log.user')}</th>
+                                <th>{t('log.description')}</th>
                             </tr>
-                        ) : (
-                            logs.map(log => (
-                                <tr key={log.id}>
-                                    <td className="log-date">
-                                        {formatDateTime(log.timestamp, language)}
-                                    </td>
-                                    <td className="log-user">
-                                        <span className="user-badge">{log.userName}</span>
-                                    </td>
-                                    <td className="log-desc">{log.description}</td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {(() => {
+                                const filtered = logs.filter(log => {
+                                    if (!startDate && !endDate) return true;
+                                    const logDate = new Date(log.timestamp);
+                                    if (startDate && logDate < new Date(startDate + 'T00:00:00')) return false;
+                                    if (endDate && logDate > new Date(endDate + 'T23:59:59')) return false;
+                                    return true;
+                                });
+
+                                if (filtered.length === 0) {
+                                    return (
+                                        <tr>
+                                            <td colSpan="3" className="text-center">{t('contributions.noHistory')}</td>
+                                        </tr>
+                                    );
+                                }
+
+                                return filtered.map(log => (
+                                    <tr key={log.id}>
+                                        <td className="log-date">
+                                            {formatDateTime(log.timestamp, language)}
+                                        </td>
+                                        <td className="log-user">
+                                            <span className="user-badge">{log.userName}</span>
+                                        </td>
+                                        <td className="log-desc">{log.description}</td>
+                                    </tr>
+                                ));
+                            })()}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <style>{`
+                .filter-card {
+                    margin-bottom: 1rem;
+                    padding: 1rem 1.5rem;
+                }
+                .filter-group {
+                    display: flex;
+                    align-items: flex-end;
+                    gap: 1.5rem;
+                    flex-wrap: wrap;
+                }
+                .filter-item {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+                .filter-item label {
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    color: var(--text-secondary);
+                    text-transform: uppercase;
+                }
+                .filter-item .input-field {
+                    padding: 0.5rem;
+                    border-radius: 0.5rem;
+                    border: 1px solid var(--glass-border);
+                    background: rgba(255, 255, 255, 0.05);
+                    color: var(--text-primary);
+                }
                 .log-list-card {
                     margin-top: 1rem;
                     padding: 0;
                     overflow: hidden;
                 }
+                .log-table-container {
+                    max-height: 600px;
+                    overflow-y: auto;
+                }
                 .log-table {
                     width: 100%;
-                    border-collapse: collapse;
+                    border-collapse: separate;
+                    border-spacing: 0;
+                }
+                .log-table thead {
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    background: var(--bg-card);
                 }
                 .log-table th, .log-table td {
                     padding: 1rem;

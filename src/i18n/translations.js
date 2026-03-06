@@ -7,7 +7,7 @@ export const translations = {
         'nav.admin': 'Admin',
         'nav.logout': 'Logout',
         'nav.login': 'Login',
-        'nav.logo': 'Offroad Maringá',
+        'nav.logo': 'App Title',
 
         // Home Page
         'home.title': 'Off-Road',
@@ -172,6 +172,8 @@ export const translations = {
         'log.date': 'Date',
         'log.user': 'User',
         'log.description': 'Description',
+        'log.startDate': 'Start Date',
+        'log.endDate': 'End Date',
         'log.title': 'Operation Logs',
 
         // Settings Page
@@ -184,6 +186,8 @@ export const translations = {
         'settings.appLogo': 'App Logo',
         'settings.appLogoDesc': 'Upload a custom logo to be displayed in the navbar.',
         'settings.logoUploaded': 'App logo updated successfully!',
+        'settings.homeDesc': 'Home Description',
+        'settings.homeDescDesc': 'Description displayed in the home page hero section.',
         'settings.contactPhone': 'Contact Phone',
         'settings.contactPhoneDesc': 'Phone number displayed on the contact page.',
         'settings.contactEmail': 'Contact Email',
@@ -254,7 +258,7 @@ export const translations = {
         'nav.admin': 'Admin',
         'nav.logout': 'Sair',
         'nav.login': 'Entrar',
-        'nav.logo': 'Offroad Maringá',
+        'nav.logo': 'Título do App',
 
         // Home Page
         'home.title': 'Off-Road',
@@ -419,6 +423,8 @@ export const translations = {
         'log.date': 'Data',
         'log.user': 'Usuário',
         'log.description': 'Descrição',
+        'log.startDate': 'Data Inicial',
+        'log.endDate': 'Data Final',
         'log.title': 'Logs de Operação',
 
         // Footer
@@ -486,6 +492,8 @@ export const translations = {
         'settings.appLogo': 'Logo do App',
         'settings.appLogoDesc': 'Carregue um logo personalizado para ser exibido na barra de navegação.',
         'settings.logoUploaded': 'Logo do app atualizado com sucesso!',
+        'settings.homeDesc': 'Descrição da Home',
+        'settings.homeDescDesc': 'Descrição exibida na seção hero da página inicial.',
         'settings.contactPhone': 'Telefone de Contato',
         'settings.contactPhoneDesc': 'Número de telefone exibido na página de contato.',
         'settings.contactEmail': 'E-mail de Contato',

@@ -41,39 +41,66 @@ const EventGallery = () => {
     }, [eventId, t]);
 
     const handleFileUpload = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
 
         setUploading(true);
         setError('');
         setSuccess('');
 
+        let successCount = 0;
+        let failCount = 0;
+
         try {
-            const downloadURL = await storageService.uploadEventPhoto(eventId, user.id, file);
+            const uploadPromises = files.map(async (file) => {
+                try {
+                    const downloadURL = await storageService.uploadEventPhoto(eventId, user.id, file);
 
-            const newPhoto = {
-                event_id: eventId,
-                url: downloadURL,
-                uploaded_by_id: user.id,
-                uploaded_by_name: user.name || user.email,
-                file_name: file.name
-            };
+                    const newPhoto = {
+                        event_id: eventId,
+                        url: downloadURL,
+                        uploaded_by_id: user.id,
+                        uploaded_by_name: user.name || user.email,
+                        file_name: file.name
+                    };
 
-            const savedPhoto = await mockService.addEventPhoto(newPhoto);
-            setPhotos(prev => [savedPhoto, ...prev]);
-            setSuccess(t('events.uploadSuccess'));
-
-            // Log the upload
-            await mockService.createLog({
-                userId: user.id,
-                userName: user.name || user.email,
-                description: `Uploaded photo to event: ${event?.title || eventId}`
+                    const savedPhoto = await mockService.addEventPhoto(newPhoto);
+                    successCount++;
+                    return savedPhoto;
+                } catch (err) {
+                    console.error(`Upload failed for ${file.name}:`, err);
+                    failCount++;
+                    return null;
+                }
             });
+
+            const results = await Promise.all(uploadPromises);
+            const newPhotos = results.filter(p => p !== null);
+
+            if (newPhotos.length > 0) {
+                setPhotos(prev => [...newPhotos, ...prev]);
+                setSuccess(`${successCount} ${t('events.photosUploaded')}`);
+            }
+
+            if (failCount > 0) {
+                setError(`${failCount} ${t('events.uploadError')}`);
+            }
+
+            // Log the upload activity
+            if (successCount > 0) {
+                await mockService.createLog({
+                    userId: user.id,
+                    userName: user.name || user.email,
+                    description: `Uploaded ${successCount} photos to event: ${event?.title || eventId}`
+                });
+            }
         } catch (err) {
-            console.error('Upload failed:', err);
-            setError(err.message || t('events.uploadError'));
+            console.error('Bulk upload process error:', err);
+            setError(t('events.uploadError'));
         } finally {
             setUploading(false);
+            // Reset input value to allow selecting same files again if needed
+            e.target.value = '';
         }
     };
 
@@ -167,6 +194,7 @@ const EventGallery = () => {
                             <input
                                 type="file"
                                 accept="image/*"
+                                multiple
                                 onChange={handleFileUpload}
                                 disabled={uploading}
                                 style={{ display: 'none' }}

@@ -72,7 +72,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
-    match /expenses/{id} {
+    match /global_transactions/{id} {
       allow read, write: if isAdmin();
     }
     

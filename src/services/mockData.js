@@ -237,14 +237,14 @@ export const mockService = {
         return { ...created.data(), id: docRef.id };
     },
 
-    getExpenses: async () => {
-        const q = query(collection(db, 'expenses'), orderBy('date', 'desc'));
+    getGlobalTransactions: async () => {
+        const q = query(collection(db, 'global_transactions'), orderBy('date', 'desc'));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
     },
 
-    addExpense: async (expense) => {
-        const docRef = await addDoc(collection(db, 'expenses'), expense);
+    addGlobalTransaction: async (tx) => {
+        const docRef = await addDoc(collection(db, 'global_transactions'), tx);
         const created = await getDoc(docRef);
         return { ...created.data(), id: docRef.id };
     },
@@ -255,8 +255,8 @@ export const mockService = {
         return { id };
     },
 
-    deleteExpense: async (id) => {
-        const docRef = doc(db, 'expenses', id);
+    deleteGlobalTransaction: async (id) => {
+        const docRef = doc(db, 'global_transactions', id);
         await deleteDoc(docRef);
         return { id };
     },

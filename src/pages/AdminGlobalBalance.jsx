@@ -12,7 +12,7 @@ const AdminGlobalBalance = () => {
     const [filteredTransactions, setFilteredTransactions] = useState([]);
     const [totalBalance, setTotalBalance] = useState(0);
     const [selectedMonth, setSelectedMonth] = useState('');
-    const [newExpense, setNewExpense] = useState({ description: '', amount: '', date: '' });
+    const [newTransaction, setNewTransaction] = useState({ description: '', amount: '', date: '', type: 'expense' });
 
     if (loading) {
         return <div className="container" style={{ paddingTop: '2rem' }}>{t('common.loading')}...</div>;
@@ -29,23 +29,28 @@ const AdminGlobalBalance = () => {
 
     const loadTransactions = async () => {
         try {
+            // 1. Member Contributions
             const contributionsRaw = await mockService.getAllContributions();
-            const contributions = await Promise.all(contributionsRaw.map(async (c) => {
-                const member = await mockService.getMemberById(c.member_id || c.memberId);
+            const memberContributions = await Promise.all(contributionsRaw.filter(c => c.member_id || c.memberId).map(async (c) => {
+                const memberId = c.member_id || c.memberId;
+                const member = await mockService.getMemberById(memberId);
                 return {
                     ...c,
                     type: 'income',
+                    source: 'member',
                     memberName: member?.name || 'Unknown Member'
                 };
             }));
 
-            const expensesRaw = await mockService.getExpenses();
-            const expenses = expensesRaw.map(e => ({
-                ...e,
-                type: 'expense'
+            // 2. Global Transactions (Revenues & Expenses)
+            const globalTxsRaw = await mockService.getGlobalTransactions();
+            const globalTxs = globalTxsRaw.map(tx => ({
+                ...tx,
+                source: 'global',
+                // Keep the type from DB (expected 'revenue' or 'expense')
             }));
 
-            const all = [...contributions, ...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const all = [...memberContributions, ...globalTxs].sort((a, b) => new Date(b.date) - new Date(a.date));
             setTransactions(all);
         } catch (err) {
             console.error('Error loading transactions:', err);
@@ -59,47 +64,53 @@ const AdminGlobalBalance = () => {
         }
         setFilteredTransactions(filtered);
 
-        const incomeSum = filtered.filter(t => t.type === 'income').reduce((acc, curr) => acc + Number(curr.amount), 0);
-        const expenseSum = filtered.filter(t => t.type === 'expense').reduce((acc, curr) => acc + Number(curr.amount), 0);
+        const incomeSum = filtered
+            .filter(t => t.type === 'income' || t.type === 'revenue')
+            .reduce((acc, curr) => acc + Number(curr.amount), 0);
+        const expenseSum = filtered
+            .filter(t => t.type === 'expense')
+            .reduce((acc, curr) => acc + Number(curr.amount), 0);
         setTotalBalance(incomeSum - expenseSum);
     };
 
-    const handleAddExpense = (e) => {
+    const handleCreateTransaction = (e) => {
         e.preventDefault();
-        if (!newExpense.description || !newExpense.amount || !newExpense.date) return;
+        if (!newTransaction.description || !newTransaction.amount || !newTransaction.date) return;
 
-        const addExpenseAsync = async () => {
+        const addTransactionAsync = async () => {
             try {
-                await mockService.addExpense({
-                    description: newExpense.description,
-                    amount: Number(newExpense.amount),
-                    date: newExpense.date
+                // Both expenses and revenues (non-member contributions) go to globalTransactions
+                await mockService.addGlobalTransaction({
+                    description: newTransaction.description,
+                    amount: Number(newTransaction.amount),
+                    date: newTransaction.date,
+                    type: newTransaction.type // 'expense' or 'revenue'
                 });
 
-                setNewExpense({ description: '', amount: '', date: '' });
+                setNewTransaction({ description: '', amount: '', date: '', type: 'expense' });
                 loadTransactions();
 
                 // Log operation
                 await mockService.createLog({
                     userId: user.id || user.uid,
                     userName: user.name || user.displayName || user.email,
-                    description: `Recorded expense: ${newExpense.description} of $${newExpense.amount}`
+                    description: `Recorded ${newTransaction.type}: ${newTransaction.description} of $${newTransaction.amount}`
                 });
             } catch (err) {
-                console.error('Error adding expense:', err);
+                console.error('Error adding transaction:', err);
             }
         };
-        addExpenseAsync();
+        addTransactionAsync();
     };
 
     const handleDeleteTransaction = async (item) => {
         if (!window.confirm(t('contributions.confirmDelete'))) return;
 
         try {
-            if (item.type === 'income') {
+            if (item.source === 'global') { // Check source to distinguish global transactions from contributions
+                await mockService.deleteGlobalTransaction(item.id);
+            } else { // Must be a member contribution
                 await mockService.deleteContribution(item.id);
-            } else {
-                await mockService.deleteExpense(item.id);
             }
             loadTransactions();
 
@@ -149,12 +160,14 @@ const AdminGlobalBalance = () => {
                                     <span className="transaction-date">{formatDate(item.date, language)}</span>
                                     <div className="transaction-details">
                                         <span className="transaction-desc">
-                                            {item.type === 'income' ? `Contribution: ${item.memberName}` : item.description}
+                                            {item.type === 'income'
+                                                ? `${t('balance.contribution')}: ${item.memberName}`
+                                                : item.description}
                                         </span>
                                     </div>
                                 </div>
                                 <span className="transaction-amount">
-                                    {item.type === 'income' ? '+' : '-'}${Number(item.amount).toFixed(2)}
+                                    {(item.type === 'income' || item.type === 'revenue') ? '+' : '-'}${Number(item.amount).toFixed(2)}
                                 </span>
                                 {isAdmin && (
                                     <button
@@ -173,25 +186,36 @@ const AdminGlobalBalance = () => {
                 <div className="add-expense-section">
                     {isAdmin ? (
                         <div className="card expense-form-card">
-                            <h3>Add Consumption / Expense</h3>
-                            <form onSubmit={handleAddExpense}>
+                            <h3>{t('balance.addTransaction') || 'Add Transaction'}</h3>
+                            <form onSubmit={handleCreateTransaction}>
                                 <div className="form-group">
-                                    <label>Description</label>
+                                    <label>{t('balance.type')}</label>
+                                    <select
+                                        className="input-field"
+                                        value={newTransaction.type}
+                                        onChange={e => setNewTransaction({ ...newTransaction, type: e.target.value })}
+                                    >
+                                        <option value="expense">{t('balance.expense')}</option>
+                                        <option value="revenue">{t('balance.revenue')}</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>{t('balance.description')}</label>
                                     <input
                                         className="input-field"
-                                        value={newExpense.description}
-                                        onChange={e => setNewExpense({ ...newExpense, description: e.target.value })}
-                                        placeholder="e.g. Event Snacks"
+                                        value={newTransaction.description}
+                                        onChange={e => setNewTransaction({ ...newTransaction, description: e.target.value })}
+                                        placeholder={newTransaction.type === 'expense' ? 'e.g. Event Snacks' : 'e.g. Donation'}
                                         required
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Amount ($)</label>
+                                    <label>{t('balance.amount')}</label>
                                     <input
                                         type="number"
                                         className="input-field"
-                                        value={newExpense.amount}
-                                        onChange={e => setNewExpense({ ...newExpense, amount: e.target.value })}
+                                        value={newTransaction.amount}
+                                        onChange={e => setNewTransaction({ ...newTransaction, amount: e.target.value })}
                                         placeholder="0.00"
                                         min="0"
                                         step="0.01"
@@ -199,16 +223,21 @@ const AdminGlobalBalance = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Date</label>
+                                    <label>{t('balance.date')}</label>
                                     <input
                                         type="date"
                                         className="input-field"
-                                        value={newExpense.date}
-                                        onChange={e => setNewExpense({ ...newExpense, date: e.target.value })}
+                                        value={newTransaction.date}
+                                        onChange={e => setNewTransaction({ ...newTransaction, date: e.target.value })}
                                         required
                                     />
                                 </div>
-                                <button type="submit" className="btn btn-danger-outline full-width">Record Expense</button>
+                                <button
+                                    type="submit"
+                                    className={`btn full-width ${newTransaction.type === 'expense' ? 'btn-danger-outline' : 'btn-success-outline'}`}
+                                >
+                                    {newTransaction.type === 'expense' ? t('balance.recordExpense') : t('balance.recordRevenue')}
+                                </button>
                             </form>
                         </div>
                     ) : (

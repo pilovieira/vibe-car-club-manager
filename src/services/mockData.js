@@ -149,6 +149,7 @@ export const mockService = {
                 ...eventData,
                 id: eventDoc.id,
                 eventType: eventData.event_type,
+                createdBy: eventData.created_by,
                 attendees: attendees
             };
         }));
@@ -162,6 +163,10 @@ export const mockService = {
             eventToInsert.event_type = eventToInsert.eventType;
             delete eventToInsert.eventType;
         }
+        if (eventToInsert.createdBy) {
+            eventToInsert.created_by = eventToInsert.createdBy;
+            delete eventToInsert.createdBy;
+        }
 
         const docRef = await addDoc(collection(db, 'events'), eventToInsert);
         const created = await getDoc(docRef);
@@ -173,6 +178,10 @@ export const mockService = {
         if (eventToUpdate.eventType) {
             eventToUpdate.event_type = eventToUpdate.eventType;
             delete eventToUpdate.eventType;
+        }
+        if (eventToUpdate.createdBy) {
+            eventToUpdate.created_by = eventToUpdate.createdBy;
+            delete eventToUpdate.createdBy;
         }
 
         const docRef = doc(db, 'events', eventId);

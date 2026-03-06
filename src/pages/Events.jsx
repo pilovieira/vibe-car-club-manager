@@ -48,7 +48,7 @@ const Events = () => {
                     const updated = await mockService.updateEvent(editingEventId, newEvent);
                     setEvents(events.map(ev => ev.id === editingEventId ? updated : ev));
                 } else {
-                    const created = await mockService.createEvent(newEvent);
+                    const created = await mockService.createEvent({ ...newEvent, createdBy: user.id || user.uid });
                     setEvents([created, ...events]);
                 }
                 setShowCreateForm(false);
@@ -220,7 +220,7 @@ const Events = () => {
                         </button>
                     )}
 
-                    {isAdmin && (
+                    {(isAdmin || (user && event.createdBy === (user.id || user.uid))) && (
                         <button
                             className="action-btn edit-btn"
                             onClick={() => handleStartEdit(event)}

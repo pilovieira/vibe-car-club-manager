@@ -1,4 +1,4 @@
-import { db } from '../firebase/config';
+import { db, storage } from '../firebase/config';
 import {
     collection,
     getDocs,
@@ -12,6 +12,7 @@ import {
     setDoc,
     orderBy
 } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 export const mockService = {
     // Members
@@ -313,10 +314,22 @@ export const mockService = {
         return { id: pageId, content: '' };
     },
 
-    updatePageContent: async (pageId, content) => {
+    updatePageContent: async (pageId, content, images = []) => {
         const docRef = doc(db, 'pages', pageId);
-        await setDoc(docRef, { content, updatedAt: new Date().toISOString() }, { merge: true });
-        return { id: pageId, content };
+        await setDoc(docRef, { content, images, updatedAt: new Date().toISOString() }, { merge: true });
+        return { id: pageId, content, images };
+    },
+
+    // Storage
+    uploadImage: async (path, file) => {
+        const storageRef = ref(storage, path);
+        await uploadBytes(storageRef, file);
+        return await getDownloadURL(storageRef);
+    },
+
+    deleteImageByUrl: async (url) => {
+        const storageRef = ref(storage, url);
+        await deleteObject(storageRef);
     }
 };
 

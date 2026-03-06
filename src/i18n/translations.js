@@ -196,6 +196,10 @@ export const translations = {
         'about.placeholder': 'Enter content here...',
         'about.saveSuccess': 'Content updated successfully!',
         'about.saving': 'Saving...',
+        'about.uploadImage': 'Upload Image',
+        'about.confirmDeleteImage': 'Are you sure you want to delete this image?',
+        'about.errorUpload': 'Error uploading image',
+        'about.uploading': 'Uploading...',
 
         // Events extra
         'events.beFirst': 'Be the first to join!',
@@ -484,6 +488,10 @@ export const translations = {
         'about.placeholder': 'Insira o conteúdo aqui...',
         'about.saveSuccess': 'Conteúdo atualizado com sucesso!',
         'about.saving': 'Salvando...',
+        'about.uploadImage': 'Enviar Imagem',
+        'about.confirmDeleteImage': 'Tem certeza que deseja excluir esta imagem?',
+        'about.errorUpload': 'Erro ao enviar imagem',
+        'about.uploading': 'Enviando...',
 
         // Events extra
         'events.beFirst': 'Seja o primeiro a participar!',
@@ -772,6 +780,10 @@ export const translations = {
         'about.placeholder': 'Ingrese el contenido aquí...',
         'about.saveSuccess': '¡Contenido actualizado con éxito!',
         'about.saving': 'Guardando...',
+        'about.uploadImage': 'Subir Imagen',
+        'about.confirmDeleteImage': '¿Estás seguro de que deseas eliminar esta imagen?',
+        'about.errorUpload': 'Error al subir la imagen',
+        'about.uploading': 'Subiendo...',
 
         // Events extra
         'events.beFirst': '¡Sé el primero en unirte!',

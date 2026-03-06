@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { mockService } from '../services/mockData';
-import { FaEdit, FaSave, FaSpinner, FaBold, FaItalic, FaListUl, FaListOl, FaLink, FaImage } from 'react-icons/fa';
+import { FaEdit, FaSave, FaSpinner, FaBold, FaItalic, FaListUl, FaListOl, FaLink, FaImage, FaUpload } from 'react-icons/fa';
 
 const About = () => {
     const { isAdmin, user } = useAuth();
@@ -11,7 +11,9 @@ const About = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
     const editorRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         const fetchContent = async () => {
@@ -29,9 +31,10 @@ const About = () => {
 
     const handleSave = async () => {
         const newContent = editorRef.current.innerHTML;
+        const imageUrls = Array.from(editorRef.current.querySelectorAll('img')).map(img => img.src);
         setIsSaving(true);
         try {
-            await mockService.updatePageContent('about', newContent);
+            await mockService.updatePageContent('about', newContent, imageUrls);
             setContent(newContent);
             setIsEditing(false);
 
@@ -50,7 +53,7 @@ const About = () => {
 
     const execCommand = (command, value = null) => {
         document.execCommand(command, false, value);
-        editorRef.current.focus();
+        if (editorRef.current) editorRef.current.focus();
     };
 
     const addLink = () => {
@@ -61,6 +64,53 @@ const About = () => {
     const addImage = () => {
         const url = prompt('Enter image URL:');
         if (url) execCommand('insertImage', url);
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const fileName = `about_page_${Date.now()}_${file.name}`;
+            const path = `pages/about/${fileName}`;
+            const downloadUrl = await mockService.uploadImage(path, file);
+
+            // Insert image at cursor
+            execCommand('insertImage', downloadUrl);
+
+            // Optional: reset file input
+            e.target.value = '';
+        } catch (err) {
+            console.error('Error uploading image:', err);
+            alert(t('about.errorUpload'));
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleEditorClick = async (e) => {
+        if (!isEditing) return;
+
+        // If clicking an image, confirm deletion
+        if (e.target.tagName === 'IMG') {
+            const img = e.target;
+            if (window.confirm(t('about.confirmDeleteImage'))) {
+                const src = img.src;
+
+                // Check if it's a storage image
+                if (src.includes('firebasestorage.googleapis.com')) {
+                    try {
+                        // Extract path from storage URL if needed or just use the whole URL if deleteObject supports it (some SDKs do)
+                        // Actually deleteImageByUrl in mockData.js uses ref(storage, url) which modular SDK supports
+                        await mockService.deleteImageByUrl(src);
+                    } catch (err) {
+                        console.error('Error deleting from storage:', err);
+                    }
+                }
+                img.remove();
+            }
+        }
     };
 
     if (isLoading) {
@@ -96,14 +146,26 @@ const About = () => {
                         <button onClick={() => execCommand('insertUnorderedList')} title="Unordered List"><FaListUl /></button>
                         <button onClick={() => execCommand('insertOrderedList')} title="Ordered List"><FaListOl /></button>
                         <button onClick={addLink} title="Add Link"><FaLink /></button>
-                        <button onClick={addImage} title="Add Image"><FaImage /></button>
+                        <button onClick={addImage} title="Add Image URL"><FaImage /></button>
+                        <button onClick={() => fileInputRef.current?.click()} title={t('about.uploadImage')} disabled={isUploading}>
+                            {isUploading ? <FaSpinner className="icon-spin" /> : <FaUpload />}
+                        </button>
                     </div>
                 )}
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                />
 
                 <div
                     ref={editorRef}
                     className="about-content"
                     contentEditable={isEditing}
+                    onClick={handleEditorClick}
                     dangerouslySetInnerHTML={{ __html: content }}
                     style={{
                         outline: 'none',
@@ -174,6 +236,14 @@ const About = () => {
                     max-width: 100%;
                     border-radius: 0.5rem;
                     margin: 1.5rem 0;
+                }
+                .about-content-card.editing .about-content img {
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .about-content-card.editing .about-content img:hover {
+                    outline: 3px solid #ef4444;
+                    opacity: 0.8;
                 }
                 .about-content a {
                     color: var(--primary);

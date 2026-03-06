@@ -45,6 +45,18 @@ service firebase.storage {
                     && (resource.metadata.uploadedById == request.auth.uid || isAdmin());
     }
     
+    // Page Content Images (About Us, etc.)
+    match /pages/{pageId}/{fileName} {
+      // Images on pages are visible to all users
+      allow read: if true;
+      
+      // Only admins can upload and delete images for pages
+      allow create, update: if isAdmin()
+                    && request.resource.size < 5 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+      allow delete: if isAdmin();
+    }
+    
     // Application assets (logo, etc.)
     match /app/{fileName} {
       // Logos are visible to all users (even unauthenticated)

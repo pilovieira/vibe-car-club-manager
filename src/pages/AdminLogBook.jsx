@@ -11,6 +11,7 @@ const AdminLogBook = () => {
     const [dataLoading, setDataLoading] = useState(true);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [userEmailFilter, setUserEmailFilter] = useState('');
 
     useEffect(() => {
         const fetchLogs = async () => {
@@ -65,9 +66,19 @@ const AdminLogBook = () => {
                             onChange={(e) => setEndDate(e.target.value)}
                         />
                     </div>
+                    <div className="filter-item">
+                        <label>{t('log.userEmail') || 'User Email'}</label>
+                        <input
+                            type="text"
+                            className="input-field"
+                            value={userEmailFilter}
+                            onChange={(e) => setUserEmailFilter(e.target.value)}
+                            placeholder="user@example.com"
+                        />
+                    </div>
                     <button
                         className="btn btn-outline"
-                        onClick={() => { setStartDate(''); setEndDate(''); }}
+                        onClick={() => { setStartDate(''); setEndDate(''); setUserEmailFilter(''); }}
                     >
                         {t('common.clear')}
                     </button>
@@ -87,11 +98,23 @@ const AdminLogBook = () => {
                         <tbody>
                             {(() => {
                                 const filtered = logs.filter(log => {
-                                    if (!startDate && !endDate) return true;
-                                    const logDate = new Date(log.timestamp);
-                                    if (startDate && logDate < new Date(startDate + 'T00:00:00')) return false;
-                                    if (endDate && logDate > new Date(endDate + 'T23:59:59')) return false;
-                                    return true;
+                                    const matchesDate = (() => {
+                                        if (!startDate && !endDate) return true;
+                                        const logDate = new Date(log.timestamp);
+                                        if (startDate && logDate < new Date(startDate + 'T00:00:00')) return false;
+                                        if (endDate && logDate > new Date(endDate + 'T23:59:59')) return false;
+                                        return true;
+                                    })();
+
+                                    const matchesEmail = (() => {
+                                        if (!userEmailFilter) return true;
+                                        const search = userEmailFilter.toLowerCase();
+                                        const name = (log.userName || '').toLowerCase();
+                                        const email = (log.userEmail || '').toLowerCase();
+                                        return name.includes(search) || email.includes(search);
+                                    })();
+
+                                    return matchesDate && matchesEmail;
                                 });
 
                                 if (filtered.length === 0) {

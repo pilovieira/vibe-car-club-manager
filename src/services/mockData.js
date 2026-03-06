@@ -274,6 +274,7 @@ export const mockService = {
             ...log,
             timestamp: new Date().toISOString(),
             userId: log.userId,
+            userEmail: log.userEmail,
             userName: log.userName,
             description: log.description
         };

@@ -229,6 +229,7 @@ export const translations = {
         // Logs
         'log.date': 'Date',
         'log.user': 'User',
+        'log.userEmail': 'Filter by User/Email',
         'log.description': 'Description',
         'log.startDate': 'Start Date',
         'log.endDate': 'End Date',
@@ -525,6 +526,7 @@ export const translations = {
         // Logs
         'log.date': 'Data',
         'log.user': 'Usuário',
+        'log.userEmail': 'Filtrar por Usuário/Email',
         'log.description': 'Descrição',
         'log.startDate': 'Data Inicial',
         'log.endDate': 'Data Final',
@@ -821,6 +823,7 @@ export const translations = {
         // Logs
         'log.date': 'Fecha',
         'log.user': 'Usuario',
+        'log.userEmail': 'Filtrar por Usuario/Email',
         'log.description': 'Descripción',
         'log.startDate': 'Fecha Inicial',
         'log.endDate': 'Fecha Final',

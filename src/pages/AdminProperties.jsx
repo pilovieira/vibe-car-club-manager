@@ -89,6 +89,7 @@ const AdminProperties = () => {
             await mockService.createLog({
                 userId: user.id || user.uid,
                 userName: user.name || user.displayName || user.email,
+                userEmail: user.email,
                 description: `Changed property [${key}] from "${oldValue}" to "${value}"`
             });
         } catch (err) {

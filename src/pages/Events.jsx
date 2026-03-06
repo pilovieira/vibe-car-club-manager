@@ -18,7 +18,8 @@ const Events = () => {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [editingEventId, setEditingEventId] = useState(null);
     const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '', description: '', eventType: 'soft trail' });
-    const [showPastEvents, setShowPastEvents] = useState(false);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     const fetchEventsAndMembers = async () => {
         setDataLoading(true);
@@ -233,11 +234,18 @@ const Events = () => {
         </div>
     );
 
-    const upcomingEvents = events
+    const filteredEvents = events.filter(event => {
+        const eventDate = parseSafeDate(event.date);
+        if (startDate && eventDate < new Date(startDate + 'T00:00:00')) return false;
+        if (endDate && eventDate > new Date(endDate + 'T23:59:59')) return false;
+        return true;
+    });
+
+    const upcomingEvents = filteredEvents
         .filter(event => parseSafeDate(event.date) >= new Date())
         .sort((a, b) => parseSafeDate(a.date) - parseSafeDate(b.date));
 
-    const pastEvents = events
+    const pastEvents = filteredEvents
         .filter(event => parseSafeDate(event.date) < new Date())
         .sort((a, b) => parseSafeDate(b.date) - parseSafeDate(a.date));
 
@@ -246,17 +254,34 @@ const Events = () => {
             <header className="page-header">
                 <div className="header-left">
                     <h1 className="page-title">{t('events.title')}</h1>
-                    <label className="filter-toggle">
-                        <input
-                            type="checkbox"
-                            checked={showPastEvents}
-                            onChange={() => setShowPastEvents(!showPastEvents)}
-                        />
-                        <span>{t('events.showPastEvents')}</span>
-                    </label>
+                    <div className="events-date-filters">
+                        <div className="date-filter-item">
+                            <label>{t('log.startDate')}</label>
+                            <input
+                                type="date"
+                                className="input-field"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                            />
+                        </div>
+                        <div className="date-filter-item">
+                            <label>{t('log.endDate')}</label>
+                            <input
+                                type="date"
+                                className="input-field"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                            />
+                        </div>
+                        {(startDate || endDate) && (
+                            <button className="btn btn-outline btn-clear" onClick={() => { setStartDate(''); setEndDate(''); }}>
+                                {t('common.clear') || 'Clear'}
+                            </button>
+                        )}
+                    </div>
                 </div>
                 {user && (
-                    <button className="btn btn-primary" onClick={() => setShowCreateForm(!showCreateForm)}>
+                    <button className="btn btn-primary btn-new-event" onClick={() => setShowCreateForm(!showCreateForm)}>
                         {showCreateForm ? t('events.cancel') : t('events.createNew')}
                     </button>
                 )}
@@ -328,20 +353,18 @@ const Events = () => {
                         </div>
 
                         {/* Past Events Section */}
-                        {showPastEvents && (
-                            <div className="events-section past-events-section animate-fade-in">
-                                <h2 className="section-title section-title-past">{t('events.pastTitle')}</h2>
-                                <div className="events-list">
-                                    {pastEvents.length === 0 ? (
-                                        <div className="no-events-hint">
-                                            <p>{t('events.noPast') || 'No past events found.'}</p>
-                                        </div>
-                                    ) : (
-                                        pastEvents.map(event => renderEventCard(event))
-                                    )}
-                                </div>
+                        <div className="events-section past-events-section animate-fade-in">
+                            <h2 className="section-title section-title-past">{t('events.pastTitle')}</h2>
+                            <div className="events-list">
+                                {pastEvents.length === 0 ? (
+                                    <div className="no-events-hint">
+                                        <p>{t('events.noPast') || 'No past events found.'}</p>
+                                    </div>
+                                ) : (
+                                    pastEvents.map(event => renderEventCard(event))
+                                )}
                             </div>
-                        )}
+                        </div>
                     </>
                 )}
             </div>
@@ -369,25 +392,38 @@ const Events = () => {
             align-items: center;
             gap: 2rem;
         }
-        .filter-toggle {
+        .events-date-filters {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 0.4rem 0.8rem;
-            border-radius: 2rem;
+            align-items: flex-end;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.75rem 1.25rem;
+            border-radius: 1rem;
             border: 1px solid var(--glass-border);
-            transition: all 0.2s;
         }
-        .filter-toggle:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
+        .date-filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
         }
-        .filter-toggle input {
-            cursor: pointer;
+        .date-filter-item label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            font-weight: 700;
+        }
+        .date-filter-item .input-field {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            width: 140px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .btn-clear {
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            height: 34px;
+            margin-bottom: 2px;
         }
         
         .events-list {
@@ -676,6 +712,31 @@ const Events = () => {
                 padding-top: 0;
                 padding-left: 1rem;
                 width: auto;
+            }
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                width: 100%;
+            }
+            .events-date-filters {
+                width: 100%;
+                flex-wrap: wrap;
+                padding: 1rem;
+            }
+            .date-filter-item {
+                flex: 1;
+                min-width: 120px;
+            }
+            .date-filter-item .input-field {
+                width: 100%;
+            }
+            .btn-new-event {
+                width: 100%;
+                margin-top: 1rem;
+            }
+            .btn-clear {
+                width: 100%;
             }
             .event-body h2 {
                 font-size: 1.25rem;

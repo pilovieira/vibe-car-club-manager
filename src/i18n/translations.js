@@ -208,6 +208,7 @@ export const translations = {
         'common.edit': 'Edit',
         'common.delete': 'Delete',
         'common.close': 'Close',
+        'common.clear': 'Clear',
 
         // Navbar - New Pages
         'nav.contact': 'Contact',
@@ -242,7 +243,7 @@ export const translations = {
         'login.button': 'Login',
         'login.loggingIn': 'Logging in...',
         'login.error': 'Invalid username or password.',
-        'login.errorInactive': 'Account is inactive. Please contact an administrator.',
+        'login.errorInactive': 'Inactive user, please contact admin',
         'login.noAccount': "Don't have an account?",
         'login.signUp': 'Sign Up',
         'login.haveAccount': 'Already have an account?',
@@ -441,6 +442,7 @@ export const translations = {
         'common.edit': 'Editar',
         'common.delete': 'Excluir',
         'common.close': 'Fechar',
+        'common.clear': 'Limpar',
 
         // Navbar - New Pages
         'nav.contact': 'Contato',
@@ -475,7 +477,7 @@ export const translations = {
         'login.button': 'Entrar',
         'login.loggingIn': 'Entrando...',
         'login.error': 'Usuário ou senha inválidos.',
-        'login.errorInactive': 'Sua conta está inativa. Por favor, entre em contato com um administrador.',
+        'login.errorInactive': 'Usuário inativo, favor contatar o administrador',
         'login.noAccount': 'Não tem uma conta?',
         'login.signUp': 'Cadastre-se',
         'login.haveAccount': 'Já tem uma conta?',

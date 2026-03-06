@@ -3,48 +3,90 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useSettings } from '../context/SettingsContext';
 import { mockService } from '../services/mockData';
-import { FaPlus, FaTrash, FaEdit, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaEdit, FaExternalLinkAlt, FaTimes } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const AdminCustomPages = () => {
     const { isAdmin, user } = useAuth();
-    const { t } = useLanguage();
+    const { t, getTranslatedTitle } = useLanguage();
     const { customPages, refreshSettings } = useSettings();
-    const [isCreating, setIsCreating] = useState(false);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [editingPage, setEditingPage] = useState(null);
     const [formData, setFormData] = useState({ title: '', path: '' });
     const [isSaving, setIsSaving] = useState(false);
 
-    const handleCreate = async (e) => {
+    const openCreateForm = () => {
+        setEditingPage(null);
+        setFormData({ title: '', path: '' });
+        setIsFormOpen(true);
+    };
+
+    const openEditForm = (page) => {
+        setEditingPage(page);
+        setFormData({ title: page.title, path: page.path });
+        setIsFormOpen(true);
+    };
+
+    const handleSave = async (e) => {
         e.preventDefault();
         if (!formData.title || !formData.path) return;
 
+        // Normalize path: remove leading / and lowercase
+        const normalizedPath = formData.path.replace(/^\//, '').toLowerCase().trim();
+        const pageId = normalizedPath.replace(/\//g, '_');
+
+        // Validation: Check for repeated pages
+        const isDuplicate = customPages.some(p =>
+            p.path === normalizedPath && (!editingPage || p.id !== editingPage.id)
+        );
+
+        if (isDuplicate) {
+            alert(t('admin.duplicatePathError') || 'A page with this path already exists.');
+            return;
+        }
+
         setIsSaving(true);
         try {
-            // Normalize path: remove leading / and lowercase
-            const normalizedPath = formData.path.replace(/^\//, '').toLowerCase().trim();
-            const pageId = normalizedPath.replace(/\//g, '_');
+            // If editing, we might be changing the ID if the path changes
+            // But usually we just update the content if ID is path-based.
+            // If path changed, we should probably delete the old one and create new or just update if we use a stable ID.
+            // mockService.updatePageContent uses pageId as the doc ID.
 
-            await mockService.updatePageContent(pageId, '', [], formData.title, normalizedPath);
+            if (editingPage && editingPage.id !== pageId) {
+                // Path changed -> New ID. Delete old one.
+                await mockService.deleteCustomPage(editingPage.id);
+            }
+
+            // Update/Create
+            await mockService.updatePageContent(
+                pageId,
+                editingPage?.content || '',
+                editingPage?.images || [],
+                formData.title,
+                normalizedPath
+            );
 
             await mockService.createLog({
                 userId: user.id || user.uid,
                 userName: user.name || user.displayName || user.email,
-                description: `Created custom page: ${formData.title} (/pages/${normalizedPath})`
+                description: `${editingPage ? 'Updated' : 'Created'} custom page: ${formData.title} (/pages/${normalizedPath})`
             });
 
             setFormData({ title: '', path: '' });
-            setIsCreating(false);
+            setIsFormOpen(false);
+            setEditingPage(null);
             await refreshSettings();
         } catch (err) {
-            console.error('Error creating page:', err);
-            alert(t('common.error') || 'Error creating page');
+            console.error('Error saving page:', err);
+            alert(t('common.error') || 'Error saving page');
         } finally {
             setIsSaving(false);
         }
     };
 
     const handleDelete = async (pageId, title) => {
-        if (!window.confirm(t('common.confirmDelete') || `Are you sure you want to delete "${title}"?`)) return;
+        const displayTitle = getTranslatedTitle(title);
+        if (!window.confirm(t('common.confirmDelete') || `Are you sure you want to delete "${displayTitle}"?`)) return;
 
         try {
             await mockService.deleteCustomPage(pageId);
@@ -52,7 +94,7 @@ const AdminCustomPages = () => {
             await mockService.createLog({
                 userId: user.id || user.uid,
                 userName: user.name || user.displayName || user.email,
-                description: `Deleted custom page: ${title}`
+                description: `Deleted custom page: ${displayTitle}`
             });
 
             await refreshSettings();
@@ -68,25 +110,29 @@ const AdminCustomPages = () => {
         <div className="container admin-custom-pages">
             <header className="page-header">
                 <h1 className="page-title">{t('admin.customPages')}</h1>
-                <button className="btn btn-primary" onClick={() => setIsCreating(!isCreating)}>
+                <button className="btn btn-primary" onClick={openCreateForm}>
                     <FaPlus /> {t('admin.createPage')}
                 </button>
             </header>
 
-            {isCreating && (
+            {isFormOpen && (
                 <div className="card create-form animate-fade-in">
-                    <h2>{t('admin.newPage')}</h2>
-                    <form onSubmit={handleCreate} className="form-vertical">
+                    <div className="card-header">
+                        <h2>{editingPage ? t('admin.editPage') || 'Edit Page' : t('admin.newPage')}</h2>
+                        <button className="btn-close" onClick={() => setIsFormOpen(false)}><FaTimes /></button>
+                    </div>
+                    <form onSubmit={handleSave} className="form-vertical">
                         <div className="form-group">
                             <label>{t('admin.pageTitle')}</label>
-                            <input
-                                type="text"
+                            <textarea
                                 className="input-field"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                placeholder="e.g. Terms of Service"
+                                placeholder="e.g. pt:Sobre\nen:About\nes:Sobre"
+                                rows={4}
                                 required
                             />
+                            <small className="form-hint">{t('admin.titleHint') || 'Use language:Text pattern or just plain text.'}</small>
                         </div>
                         <div className="form-group">
                             <label>{t('admin.pagePath')}</label>
@@ -104,7 +150,7 @@ const AdminCustomPages = () => {
                             <small className="form-hint">{t('admin.pathHint')}</small>
                         </div>
                         <div className="form-actions">
-                            <button type="button" className="btn btn-outline" onClick={() => setIsCreating(false)}>
+                            <button type="button" className="btn btn-outline" onClick={() => setIsFormOpen(false)}>
                                 {t('common.cancel')}
                             </button>
                             <button type="submit" className="btn btn-primary" disabled={isSaving}>
@@ -125,10 +171,13 @@ const AdminCustomPages = () => {
                         {customPages.map(page => (
                             <div key={page.id} className="card page-card">
                                 <div className="page-info">
-                                    <h3>{page.title}</h3>
+                                    <h3>{getTranslatedTitle(page.title)}</h3>
                                     <p className="page-path">/pages/{page.path}</p>
                                 </div>
                                 <div className="page-actions">
+                                    <button className="btn-icon" onClick={() => openEditForm(page)} title={t('common.edit')}>
+                                        <FaEdit />
+                                    </button>
                                     <Link to={`/pages/${page.path}`} className="btn-icon" title={t('common.view')}>
                                         <FaExternalLinkAlt />
                                     </Link>
@@ -149,6 +198,19 @@ const AdminCustomPages = () => {
                 .create-form {
                     margin-bottom: 2rem;
                     max-width: 600px;
+                }
+                .card-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 1.5rem;
+                }
+                .btn-close {
+                    background: none;
+                    border: none;
+                    color: var(--text-secondary);
+                    cursor: pointer;
+                    font-size: 1.2rem;
                 }
                 .form-vertical {
                     display: flex;
@@ -233,6 +295,11 @@ const AdminCustomPages = () => {
                 @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
+                }
+                textarea.input-field {
+                   font-family: monospace;
+                   font-size: 0.9rem;
+                   resize: vertical;
                 }
             `}</style>
         </div>

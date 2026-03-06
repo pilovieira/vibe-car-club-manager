@@ -103,7 +103,8 @@ const AdminMonthlySummary = () => {
                                             await mockService.addContribution({
                                                 member_id: member.id,
                                                 date: `${selectedDate}-10`,
-                                                amount: monthlyContribution
+                                                amount: monthlyContribution,
+                                                description: t('monthly.defaultDescription')
                                             });
                                             const updatedContributions = await mockService.getAllContributions();
                                             setContributions(updatedContributions);

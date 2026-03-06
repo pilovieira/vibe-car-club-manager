@@ -16,7 +16,7 @@ const AdminMemberContributions = () => {
     // New Contribution State
     const [showAddForm, setShowAddForm] = useState(false);
     const [monthlyContribution, setMonthlyContribution] = useState(50);
-    const [newContribution, setNewContribution] = useState({ date: '', amount: 50 });
+    const [newContribution, setNewContribution] = useState({ date: '', amount: 50, description: '' });
 
     if (loading) {
         return <div className="container" style={{ paddingTop: '2rem' }}>{t('common.loading')}...</div>;
@@ -78,7 +78,7 @@ const AdminMemberContributions = () => {
 
                 setContributions([...contributions, added]);
                 setShowAddForm(false);
-                setNewContribution({ date: '', amount: monthlyContribution });
+                setNewContribution({ date: '', amount: monthlyContribution, description: '' });
 
                 // Log operation
                 await mockService.createLog({
@@ -153,28 +153,40 @@ const AdminMemberContributions = () => {
                     {showAddForm && (
                         <div className="card add-form">
                             <h3>{t('contributions.newPayment')}</h3>
-                            <form onSubmit={handleCreateContribution} className="form-inline">
-                                <div className="form-group">
-                                    <label>{t('contributions.date')}</label>
+                            <form onSubmit={handleCreateContribution} className="form-col">
+                                <div className="form-row-top">
+                                    <div className="form-group">
+                                        <label>{t('contributions.date')}</label>
+                                        <input
+                                            type="date"
+                                            className="input-field"
+                                            value={newContribution.date}
+                                            onChange={e => setNewContribution({ ...newContribution, date: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>{t('contributions.amount')}</label>
+                                        <input
+                                            type="number"
+                                            className="input-field"
+                                            value={newContribution.amount}
+                                            onChange={e => setNewContribution({ ...newContribution, amount: Number(e.target.value) })}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group full-width">
+                                    <label>{t('contributions.description')}</label>
                                     <input
-                                        type="date"
+                                        type="text"
                                         className="input-field"
-                                        value={newContribution.date}
-                                        onChange={e => setNewContribution({ ...newContribution, date: e.target.value })}
-                                        required
+                                        placeholder={t('monthly.defaultDescription')}
+                                        value={newContribution.description}
+                                        onChange={e => setNewContribution({ ...newContribution, description: e.target.value })}
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label>{t('contributions.amount')}</label>
-                                    <input
-                                        type="number"
-                                        className="input-field"
-                                        value={newContribution.amount}
-                                        onChange={e => setNewContribution({ ...newContribution, amount: Number(e.target.value) })}
-                                        required
-                                    />
-                                </div>
-                                <button type="submit" className="btn btn-success" style={{ alignSelf: 'flex-end' }}>{t('contributions.save')}</button>
+                                <button type="submit" className="btn btn-success" style={{ alignSelf: 'flex-end', marginTop: '0.5rem' }}>{t('contributions.save')}</button>
                             </form>
                         </div>
                     )}
@@ -187,6 +199,7 @@ const AdminMemberContributions = () => {
                                 <thead>
                                     <tr>
                                         <th>{t('contributions.date')}</th>
+                                        <th>{t('contributions.description')}</th>
                                         <th>{t('contributions.amount')}</th>
                                         <th>{t('monthly.status')}</th>
                                         {isAdmin && <th>{t('contributions.actions')}</th>}
@@ -196,6 +209,7 @@ const AdminMemberContributions = () => {
                                     {contributions.map(c => (
                                         <tr key={c.id}>
                                             <td>{formatDate(c.date, language)}</td>
+                                            <td>{c.description || (c.type === 'income' ? t('monthly.defaultDescription') : '')}</td>
                                             <td>${c.amount}</td>
                                             <td><span className="badge-paid">{t('monthly.paid')}</span></td>
                                             {isAdmin && (
@@ -234,10 +248,21 @@ const AdminMemberContributions = () => {
             align-items: center;
             margin-bottom: 1rem;
         }
-        .form-inline {
+        .form-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .form-row-top {
             display: flex;
             gap: 1rem;
             align-items: center;
+        }
+        .form-group.full-width {
+            width: 100%;
+        }
+        .form-group.full-width .input-field {
+            width: 100%;
         }
         .form-group {
             display: flex;

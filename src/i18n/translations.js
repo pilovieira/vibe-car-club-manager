@@ -139,6 +139,7 @@ export const translations = {
         'contributions.paymentHistory': 'Payment History',
         'contributions.date': 'Date',
         'contributions.amount': 'Amount',
+        'contributions.description': 'Description',
         'contributions.actions': 'Actions',
         'contributions.remove': 'Remove',
         'contributions.noHistory': 'No payment history yet.',
@@ -154,6 +155,7 @@ export const translations = {
         'monthly.member': 'Member',
         'monthly.status': 'Status',
         'monthly.paid': 'Paid',
+        'monthly.defaultDescription': 'Monthly payment',
         'monthly.pending': 'Pending',
         'monthly.totalCollected': 'Total Collected',
 
@@ -393,6 +395,7 @@ export const translations = {
         'contributions.paymentHistory': 'Histórico de Pagamentos',
         'contributions.date': 'Data',
         'contributions.amount': 'Valor',
+        'contributions.description': 'Descrição',
         'contributions.actions': 'Ações',
         'contributions.remove': 'Remover',
         'contributions.noHistory': 'Nenhum histórico de pagamento ainda.',
@@ -408,6 +411,7 @@ export const translations = {
         'monthly.member': 'Membro',
         'monthly.status': 'Status',
         'monthly.paid': 'Pago',
+        'monthly.defaultDescription': 'Mensalidade',
         'monthly.pending': 'Pendente',
         'monthly.totalCollected': 'Total Arrecadado',
 

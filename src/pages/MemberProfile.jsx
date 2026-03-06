@@ -91,11 +91,24 @@ const MemberProfile = () => {
                 setMember(updated);
                 setIsEditing(false);
 
+                // Calculate changed fields
+                const changedFields = [];
+                if (editData.name !== (member.name || '')) changedFields.push(t('profile.name'));
+                if (editData.username.toLowerCase().trim() !== (member.username || '')) changedFields.push(t('member.username'));
+                if (editData.email !== (member.email || '')) changedFields.push(t('profile.email'));
+                if (editData.description !== (member.description || '')) changedFields.push(t('profile.bio'));
+                if (editData.dateBirth !== (member.dateBirth || '')) changedFields.push(t('profile.dateBirth'));
+                if (editData.gender !== (member.gender || '')) changedFields.push(t('gender.label'));
+                if (editData.role !== (member.role || '')) changedFields.push(t('member.role'));
+                if (editData.status !== (member.status || '')) changedFields.push(t('members.status'));
+
+                const fieldsDescription = changedFields.length > 0 ? ` (${changedFields.join(', ')})` : '';
+
                 // Log operation
                 await mockService.createLog({
                     userId: user.id || user.uid,
                     userName: user.name || user.displayName || user.email,
-                    description: `Updated profile for member: ${member.name} (@${member.username})`
+                    description: `Updated profile for member: ${member.name}${fieldsDescription}`
                 });
             };
             fetchUpdate();

@@ -247,6 +247,28 @@ const AdminProperties = () => {
 
                     <div className="setting-item">
                         <div className="setting-info">
+                            <h3>{t('settings.appLanguage') || 'App Language'}</h3>
+                            <p>{t('settings.appLanguageDesc') || 'Set the default language for all users.'}</p>
+                        </div>
+                        <div className="setting-action" style={{ flex: 1, maxWidth: '500px' }}>
+                            <div className="input-group" style={{ width: '100%' }}>
+                                <select 
+                                    className="input-field"
+                                    style={{ width: '100%' }}
+                                    value={properties.app_language || 'pt'}
+                                    onChange={(e) => handleUpdate('app_language', e.target.value)}
+                                    disabled={saving}
+                                >
+                                    <option value="pt">Português (BR)</option>
+                                    <option value="en">English (US)</option>
+                                    <option value="es">Español (ES)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="setting-item">
+                        <div className="setting-info">
                             <h3>{t('settings.appTheme')}</h3>
                             <p>{t('settings.appThemeDesc')}</p>
                         </div>

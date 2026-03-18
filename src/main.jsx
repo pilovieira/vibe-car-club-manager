@@ -11,15 +11,15 @@ import './styles/index.css'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
-      <LanguageProvider>
-        <ThemeProvider>
-          <SettingsProvider>
+      <SettingsProvider>
+        <LanguageProvider>
+          <ThemeProvider>
             <AuthProvider>
               <App />
             </AuthProvider>
-          </SettingsProvider>
-        </ThemeProvider>
-      </LanguageProvider>
+          </ThemeProvider>
+        </LanguageProvider>
+      </SettingsProvider>
     </ErrorBoundary>
   </StrictMode>,
 )

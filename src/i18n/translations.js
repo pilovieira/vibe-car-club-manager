@@ -250,6 +250,8 @@ export const translations = {
         'settings.logoUploaded': 'App logo updated successfully!',
         'settings.homeDesc': 'Home Description',
         'settings.homeDescDesc': 'Description displayed in the home page hero section.',
+        'settings.appLanguage': 'App Language',
+        'settings.appLanguageDesc': 'Set the fixed language for the entire application for all users.',
         'settings.eventTypes': 'Event Types',
         'settings.eventTypesDesc': 'Define categories for your events (one per line).',
 
@@ -560,6 +562,8 @@ export const translations = {
         'settings.logoUploaded': 'Logo do app atualizado com sucesso!',
         'settings.homeDesc': 'Descrição da Home',
         'settings.homeDescDesc': 'Descrição exibida na seção hero da página inicial.',
+        'settings.appLanguage': 'Idioma do App',
+        'settings.appLanguageDesc': 'Define o idioma fixo para toda a aplicação para todos os usuários.',
         'settings.eventTypes': 'Tipos de Evento',
         'settings.eventTypesDesc': 'Defina as categorias para seus eventos (uma por linha).',
 
@@ -870,6 +874,8 @@ export const translations = {
         'settings.logoUploaded': '¡Logo del app actualizado con éxito!',
         'settings.homeDesc': 'Descripción de Inicio',
         'settings.homeDescDesc': 'Descripción mostrada en la sección principal de la página de inicio.',
+        'settings.appLanguage': 'Idioma del App',
+        'settings.appLanguageDesc': 'Define el idioma fijo para toda la aplicación para todos los usuarios.',
         'settings.eventTypes': 'Tipos de Evento',
         'settings.eventTypesDesc': 'Defina las categorías para sus eventos (una por línea).',
 

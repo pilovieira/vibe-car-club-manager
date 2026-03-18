@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { translations } from '../i18n/translations';
+import { useSettings } from './SettingsContext';
 
 const LanguageContext = createContext();
 
@@ -12,10 +13,18 @@ export const useLanguage = () => {
 };
 
 export const LanguageProvider = ({ children }) => {
+    const { settings } = useSettings();
     const [language, setLanguage] = useState(() => {
-        // Load from localStorage or default to Portuguese
-        return localStorage.getItem('language') || 'pt';
+        // Load from localStorage or default to settings or 'pt'
+        return localStorage.getItem('language') || settings.app_language || 'pt';
     });
+
+    // Update language state when the app property changes
+    useEffect(() => {
+        if (settings.app_language && settings.app_language !== language) {
+            setLanguage(settings.app_language);
+        }
+    }, [settings.app_language]);
 
     useEffect(() => {
         // Save to localStorage whenever language changes
@@ -27,6 +36,7 @@ export const LanguageProvider = ({ children }) => {
     };
 
     const toggleLanguage = () => {
+        // No longer actively used in navbar but kept here for stability
         setLanguage(prev => {
             if (prev === 'en') return 'pt';
             if (prev === 'pt') return 'es';

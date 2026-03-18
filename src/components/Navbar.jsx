@@ -11,22 +11,13 @@ const Navbar = () => {
   const { language, setLanguage, t, getTranslatedTitle } = useLanguage();
   const { settings, customPages } = useSettings();
   const navigate = useNavigate();
-  const [showLangMenu, setShowLangMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Close menus when navigation happens
   const handleNavClick = () => {
     setShowMobileMenu(false);
-    setShowLangMenu(false);
   };
 
-  const languages = [
-    { code: 'pt', name: 'Português', flag: '🇧🇷' },
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' }
-  ];
-
-  const currentLang = languages.find(l => l.code === language);
 
   const handleLogout = async (e) => {
     if (e) {
@@ -83,37 +74,6 @@ const Navbar = () => {
           </div>
 
           <div className="nav-auth-wrapper">
-            <div className="lang-selector">
-              <button
-                onClick={() => setShowLangMenu(!showLangMenu)}
-                className={`lang-toggle ${showLangMenu ? 'active' : ''}`}
-                onBlur={() => setTimeout(() => setShowLangMenu(false), 200)}
-              >
-                <FaGlobe className="globe-icon" />
-                <span className="lang-flag">{currentLang?.flag}</span>
-                <span className="lang-name">{currentLang?.code.toUpperCase()}</span>
-                <FaChevronDown className={`arrow-icon ${showLangMenu ? 'up' : ''}`} />
-              </button>
-              {showLangMenu && (
-                <div className="lang-menu animate-slide-up">
-                  {languages.map(lang => (
-                    <button
-                      key={lang.code}
-                      className={`lang-option ${language === lang.code ? 'selected' : ''}`}
-                      onClick={() => {
-                        setLanguage(lang.code);
-                        setShowLangMenu(false);
-                      }}
-                    >
-                      <span className="lang-flag">{lang.flag}</span>
-                      <span className="lang-label">{lang.name}</span>
-                      {language === lang.code && <span className="active-dot"></span>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {user ? (
               <div className="user-section">
                 <div className="user-profile-summary">

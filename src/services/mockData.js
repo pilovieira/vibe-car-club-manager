@@ -120,6 +120,9 @@ export const mockService = {
         if (!props.event_types) {
             props.event_types = ['soft trail', 'hard trail', 'members meetup', 'club official meetup'];
         }
+        if (!props.app_language) {
+            props.app_language = 'pt';
+        }
         return props;
     },
 

@@ -298,6 +298,13 @@ export const translations = {
         'login.loggingIn': 'Logging in...',
         'login.error': 'Invalid username or password.',
         'login.errorInactive': 'Inactive user, please contact admin',
+        'login.emailLink': 'Login with Email Link',
+        'login.passwordLink': 'Login with Password',
+        'login.sendLink': 'Send Login Link',
+        'login.linkSent': 'Login link sent! Please check your email.',
+        'login.signingIn': 'Signing in...',
+        'login.invalidLink': 'Invalid or expired login link.',
+        'login.google': 'Sign in with Google',
     },
     pt: {
         // Navbar
@@ -598,6 +605,13 @@ export const translations = {
         'login.loggingIn': 'Entrando...',
         'login.error': 'Usuário ou senha inválidos.',
         'login.errorInactive': 'Usuário inativo, favor contatar o administrador',
+        'login.emailLink': 'Entrar com Link por Email',
+        'login.passwordLink': 'Entrar com Senha',
+        'login.sendLink': 'Enviar Link de Acesso',
+        'login.linkSent': 'Link de acesso enviado! Por favor, verifique seu email.',
+        'login.signingIn': 'Entrando...',
+        'login.invalidLink': 'Link de acesso inválido ou expirado.',
+        'login.google': 'Entrar com Google',
     },
     es: {
         // Navbar
@@ -896,5 +910,12 @@ export const translations = {
         'login.loggingIn': 'Iniciando sesión...',
         'login.error': 'Usuario o contraseña inválidos.',
         'login.errorInactive': 'Usuario inactivo, por favor contacte al administrador',
+        'login.emailLink': 'Iniciar con Link de Email',
+        'login.passwordLink': 'Iniciar con Contraseña',
+        'login.sendLink': 'Enviar Link de Acceso',
+        'login.linkSent': '¡Link de acceso enviado! Por favor, revisa tu correo.',
+        'login.signingIn': 'Iniciando sesión...',
+        'login.invalidLink': 'Link de acceso inválido o expirado.',
+        'login.google': 'Iniciar sesión con Google',
     }
 };

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
 import { mockService } from '../services/mockData';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -12,7 +11,8 @@ const AdminCreateMember = () => {
 
     const [formData, setFormData] = useState({
         email: '',
-        password: '',
+        name: '',
+        username: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -26,22 +26,28 @@ const AdminCreateMember = () => {
         setSuccess('');
 
         try {
-            await authService.createUser(formData.email, formData.password);
+            await mockService.createMember({
+                email: formData.email.trim(),
+                name: formData.name.trim(),
+                username: formData.username.toLowerCase().trim(),
+                status: 'active',
+                role: 'member'
+            });
 
             setSuccess(t('members.memberCreated'));
             setFormData({
                 email: '',
-                password: '',
+                name: '',
+                username: ''
             });
 
             // Log operation
             await mockService.createLog({
                 userId: user.id || user.uid,
                 userName: user.name || user.displayName || user.email,
-                description: `Created new user: ${formData.email}`
+                description: `Created new member: ${formData.email}`
             });
 
-            // Optional: redirect after some time
             setTimeout(() => navigate('/admin'), 2000);
         } catch (err) {
             setError(err.message);
@@ -60,23 +66,34 @@ const AdminCreateMember = () => {
 
                 <form onSubmit={handleSubmit} className="form-vertical">
                     <div className="form-group">
+                        <label>{t('member.name')}</label>
+                        <input
+                            type="text"
+                            className="input-field"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>{t('member.username')}</label>
+                        <input
+                            type="text"
+                            className="input-field"
+                            value={formData.username}
+                            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
                         <label>{t('login.email')}</label>
                         <input
                             type="email"
                             className="input-field"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>{t('login.password')}</label>
-                        <input
-                            type="password"
-                            className="input-field"
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             required
                         />
                     </div>

@@ -25,17 +25,6 @@ const MemberProfile = () => {
         name: '', username: '', email: '', avatar: '', description: '', dateBirth: '', status: 'active', gender: 'male', role: 'member'
     });
 
-    // Change Password State
-    const [isChangingPassword, setIsChangingPassword] = useState(false);
-    const [passwordData, setPasswordData] = useState({
-        current: '',
-        new: '',
-        confirm: ''
-    });
-    const [passwordError, setPasswordError] = useState('');
-    const [passwordSuccess, setPasswordSuccess] = useState('');
-    const [isSavingPassword, setIsSavingPassword] = useState(false);
-
     // Avatar Upload State
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [uploadError, setUploadError] = useState('');
@@ -149,40 +138,6 @@ const MemberProfile = () => {
 
             };
             toggleStatusAsync();
-        }
-    };
-
-    const handleChangePassword = async (e) => {
-        e.preventDefault();
-        setPasswordError('');
-        setPasswordSuccess('');
-
-        if (passwordData.new !== passwordData.confirm) {
-            setPasswordError(t('profile.passwordMismatch'));
-            return;
-        }
-
-        setIsSavingPassword(true);
-        try {
-            await authService.changePassword(passwordData.current, passwordData.new);
-            setPasswordSuccess(t('profile.passwordChanged'));
-            setPasswordData({ current: '', new: '', confirm: '' });
-
-            // Log operation
-            await mockService.createLog({
-                userId: user.id || user.uid,
-                userName: user.name || user.displayName || user.email,
-                description: `Changed own password`
-            });
-
-            setTimeout(() => {
-                setIsChangingPassword(false);
-                setPasswordSuccess('');
-            }, 2000);
-        } catch (err) {
-            setPasswordError(err.message);
-        } finally {
-            setIsSavingPassword(false);
         }
     };
 
@@ -318,11 +273,6 @@ const MemberProfile = () => {
                     </div>
 
                     <div className="profile-footer-actions">
-                        {isOwnProfile && (
-                            <button className="btn-premium btn-password" onClick={() => setIsChangingPassword(true)}>
-                                <FaLock /> {t('profile.changePassword')}
-                            </button>
-                        )}
                         {canEdit && (
                             <button className="btn-premium btn-edit" onClick={() => setIsEditing(true)}>
                                 <FaUserEdit /> {t('profile.editProfile')}
@@ -418,68 +368,6 @@ const MemberProfile = () => {
                             <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)}>{t('profile.cancel')}</button>
                         </div>
                     </form>
-                </div>
-            )}
-
-            {isChangingPassword && (
-                <div className="modal-overlay">
-                    <div className="card modal-card">
-                        <h3>{t('profile.changePassword')}</h3>
-                        {passwordError && <div className="error-message">{passwordError}</div>}
-                        {passwordSuccess && <div className="success-message">{passwordSuccess}</div>}
-
-                        <form onSubmit={handleChangePassword} className="form-vertical">
-                            <div className="form-group">
-                                <label>{t('profile.currentPassword')}</label>
-                                <input
-                                    type="password"
-                                    className="input-field"
-                                    value={passwordData.current}
-                                    onChange={e => setPasswordData({ ...passwordData, current: e.target.value })}
-                                    required
-                                    autoComplete="current-password"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>{t('profile.newPassword')}</label>
-                                <input
-                                    type="password"
-                                    className="input-field"
-                                    value={passwordData.new}
-                                    onChange={e => setPasswordData({ ...passwordData, new: e.target.value })}
-                                    required
-                                    autoComplete="new-password"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>{t('profile.confirmNewPassword')}</label>
-                                <input
-                                    type="password"
-                                    className="input-field"
-                                    value={passwordData.confirm}
-                                    onChange={e => setPasswordData({ ...passwordData, confirm: e.target.value })}
-                                    required
-                                    autoComplete="new-password"
-                                />
-                            </div>
-                            <div className="form-actions">
-                                <button type="submit" className="btn btn-primary" disabled={isSavingPassword}>
-                                    {isSavingPassword ? t('common.loading') : t('common.save')}
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-outline"
-                                    onClick={() => {
-                                        setIsChangingPassword(false);
-                                        setPasswordError('');
-                                        setPasswordData({ current: '', new: '', confirm: '' });
-                                    }}
-                                >
-                                    {t('common.cancel')}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             )}
 

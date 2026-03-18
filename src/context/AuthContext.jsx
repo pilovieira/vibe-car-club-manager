@@ -81,15 +81,6 @@ export const AuthProvider = ({ children }) => {
         };
     }, [refreshProfile]);
 
-    const login = async (email, password) => {
-        const data = await authService.login(email, password);
-        return data.user;
-    };
-
-    const signUp = async (email, password, metadata) => {
-        const data = await authService.signUp(email, password, metadata);
-        return !!data.user;
-    };
 
     const logout = async () => {
         console.log('AuthContext: logout() initiated...');
@@ -110,9 +101,11 @@ export const AuthProvider = ({ children }) => {
 
     const value = {
         user,
-        login,
-        signUp,
         logout,
+        sendEmailLink: authService.sendEmailLink,
+        isSignInWithEmailLink: authService.isSignInWithEmailLink,
+        signInWithEmailLink: authService.signInWithEmailLink,
+        loginWithGoogle: authService.loginWithGoogle,
         isAdmin: user?.profile?.role === 'admin',
         userRole: user?.profile?.role || 'visitor',
         loading

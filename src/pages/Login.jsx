@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
 
 const Login = () => {
-    const [password, setPassword] = useState('');
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
 
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loadingSub, setLoadingSub] = useState(false);
 
-    const { login, user, loading } = useAuth();
+    const { user, loading, sendEmailLink, isSignInWithEmailLink, signInWithEmailLink, loginWithGoogle } = useAuth();
     const { t } = useLanguage();
     const navigate = useNavigate();
 
@@ -22,34 +21,60 @@ const Login = () => {
         }
     }, [user, loading, navigate]);
 
-    const handleSubmit = async (e) => {
+    useEffect(() => {
+        const checkEmailLink = async () => {
+            if (isSignInWithEmailLink(window.location.href)) {
+                let emailForSignIn = window.localStorage.getItem('emailForSignIn');
+                if (!emailForSignIn) {
+                    emailForSignIn = window.prompt(t('login.emailPrompt') || 'Please provide your email for confirmation');
+                }
+
+                if (emailForSignIn) {
+                    setLoadingSub(true);
+                    try {
+                        await signInWithEmailLink(emailForSignIn, window.location.href);
+                        window.localStorage.removeItem('emailForSignIn');
+                        navigate('/');
+                    } catch (err) {
+                        setError(t('login.invalidLink'));
+                        console.error(err);
+                    } finally {
+                        setLoadingSub(false);
+                    }
+                }
+            }
+        };
+
+        checkEmailLink();
+    }, [isSignInWithEmailLink, signInWithEmailLink, navigate, t]);
+
+    const handleSendEmailLink = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
         setLoadingSub(true);
 
         try {
-            const identifier = username.trim();
-            const loggedUser = await login(identifier, password);
-            if (loggedUser) {
-                navigate('/');
-            } else {
-                setError(t('login.error'));
-            }
+            await sendEmailLink(email.trim());
+            setSuccess(t('login.linkSent'));
         } catch (err) {
-            // Check if error message is a translation key
-            const translated = t(err.message);
-            if (translated !== err.message) {
-                setError(translated);
-            } else if (err.message === 'Invalid email or password') {
-                setError(t('login.error'));
-            } else {
-                setError(err.message);
-            }
+            setError(err.message);
         } finally {
             setLoadingSub(false);
         }
+    };
 
+    const handleGoogleLogin = async () => {
+        setError('');
+        setLoadingSub(true);
+        try {
+            await loginWithGoogle();
+            navigate('/');
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoadingSub(false);
+        }
     };
 
     return (
@@ -60,33 +85,37 @@ const Login = () => {
                 {error && <div className="error-message">{error}</div>}
                 {success && <div className="success-message">{success}</div>}
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSendEmailLink}>
                     <div className="form-group">
-                        <label>{t('member.username')}</label>
+                        <label>{t('login.email')}</label>
                         <input
-                            type="text"
+                            type="email"
                             className="input-field"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>{t('login.password')}</label>
-                        <input
-                            type="password"
-                            className="input-field"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
+                            placeholder="name@example.com"
                         />
                     </div>
 
                     <button type="submit" className="btn btn-primary" disabled={loadingSub}>
-                        {loadingSub ? t('login.loggingIn') : t('login.button')}
+                        {loadingSub ? t('common.loading') : t('login.sendLink')}
                     </button>
                 </form>
+
+                <div className="auth-divider">
+                    <span>{t('common.or') || 'OR'}</span>
+                </div>
+
+                <button
+                    type="button"
+                    className="btn btn-google"
+                    onClick={handleGoogleLogin}
+                    disabled={loadingSub}
+                >
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                    {t('login.google')}
+                </button>
             </div>
 
 
@@ -132,10 +161,48 @@ const Login = () => {
                     width: 100%;
                     margin-top: 1.5rem;
                 }
+                .auth-divider {
+                    display: flex;
+                    align-items: center;
+                    text-align: center;
+                    margin: 2rem 0;
+                    color: var(--text-muted, #666);
+                }
+                .auth-divider::before,
+                .auth-divider::after {
+                    content: '';
+                    flex: 1;
+                    border-bottom: 1px solid var(--border-color, #eee);
+                }
+                .auth-divider span {
+                    padding: 0 1rem;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                }
+                .btn-google {
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.75rem;
+                    background: #fff;
+                    color: #757575;
+                    border: 1px solid #ddd;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                }
+                .btn-google:hover {
+                    background: #f5f5f5;
+                    border-color: #ccc;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+                .btn-google img {
+                    width: 18px;
+                    height: 18px;
+                }
             `}</style>
         </div>
     );
 };
 
 export default Login;
-

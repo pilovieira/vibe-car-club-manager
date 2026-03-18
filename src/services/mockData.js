@@ -132,6 +132,17 @@ export const mockService = {
         return { key, value };
     },
 
+    updateProperties: async (properties) => {
+        const { writeBatch } = await import('firebase/firestore');
+        const batch = writeBatch(db);
+        Object.entries(properties).forEach(([key, value]) => {
+            const docRef = doc(db, 'properties', key);
+            batch.set(docRef, { value }, { merge: true });
+        });
+        await batch.commit();
+        return properties;
+    },
+
     getProperty: async (key, defaultValue) => {
         const docRef = doc(db, 'properties', key);
         const docSnap = await getDoc(docRef);

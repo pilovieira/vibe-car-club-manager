@@ -9,7 +9,8 @@ import {
     signInWithEmailLink,
     GoogleAuthProvider,
     signInWithPopup,
-    createUserWithEmailAndPassword
+    createUserWithEmailAndPassword,
+    deleteUser
 } from 'firebase/auth';
 import {
     doc,
@@ -31,18 +32,30 @@ const ensureMemberProfile = async (user) => {
     const memberDoc = await getDoc(memberDocRef);
 
     if (!memberDoc.exists()) {
-        console.log('authService: Member data not found, creating default profile');
-        const memberData = {
-            id: user.uid,
-            email: user.email,
-            username: user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, ''),
-            name: user.displayName || user.email.split('@')[0],
-            role: 'member',
-            status: 'active',
-            join_date: new Date().toISOString(),
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`
-        };
-        await setDoc(memberDocRef, memberData);
+        console.log('authService: Member data not found, checking by email...');
+        
+        // Check if there is a member pre-created with this email but without ID set yet
+        // (Wait, AdminCreateMember already sets the ID if they create the Auth user first)
+        // But some older members might not have it.
+        const q = query(collection(db, 'members'), where('email', '==', user.email));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            // Not invited / Not pre-created
+            console.warn('authService: No member document found for', user.email);
+            return null;
+        }
+
+        const memberData = querySnapshot.docs[0].data();
+        const existingId = querySnapshot.docs[0].id;
+
+        if (existingId !== user.uid) {
+            // If the ID in Firestore is different from the UID (shouldn't happen if created via AdminCreateMember)
+            // But we should probably fix it by re-mapping or something.
+            // For now, let's just use it.
+            console.log('authService: Mapping existing member profile to new UID');
+            await setDoc(doc(db, 'members', user.uid), { ...memberData, id: user.uid });
+        }
         return memberData;
     }
 
@@ -62,6 +75,7 @@ export const authService = {
         if (!user) return null;
 
         const memberData = await ensureMemberProfile(user);
+        if (!memberData) return null;
 
         return {
             user: {
@@ -82,6 +96,23 @@ export const authService = {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const memberData = await ensureMemberProfile(user);
+                
+                if (!memberData) {
+                    console.warn('authService: Unauthorized access attempted for', user.email);
+                    // Optionally clean up the newly created Auth user if it was a "on-the-fly" creation
+                    // But deleting might be too aggressive if they were just not yet pre-created.
+                    // For now, just sign out and notify.
+                    await signOut(auth);
+                    callback('AUTH_ERROR', { message: 'auth.userNotFound' });
+                    return;
+                }
+
+                if (memberData.status === 'inactive') {
+                    await signOut(auth);
+                    callback('AUTH_ERROR', { message: 'login.errorInactive' });
+                    return;
+                }
+
                 const session = {
                     user: {
                         id: user.uid,
@@ -139,6 +170,15 @@ export const authService = {
 
 
     sendEmailLink: async (email) => {
+        // CHECK: If user exists in members collection
+        const q = query(collection(db, 'members'), where('email', '==', email.trim()));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            console.warn('authService: Login attempt for uninvited email:', email);
+            throw new Error('auth.userNotFound');
+        }
+
         const actionCodeSettings = {
             url: window.location.origin + '/login',
             handleCodeInApp: true,
@@ -163,6 +203,18 @@ export const authService = {
             const result = await signInWithEmailLink(auth, email, url);
             const user = result.user;
             const memberData = await ensureMemberProfile(user);
+
+            if (!memberData) {
+                // Should already be caught by sendEmailLink, but good for safety
+                // If it's a new user created on the fly, delete it
+                const isNewUser = (user.metadata.creationTime === user.metadata.lastSignInTime);
+                if (isNewUser) {
+                    await deleteUser(user);
+                } else {
+                    await signOut(auth);
+                }
+                throw new Error('auth.userNotFound');
+            }
 
             const session = {
                 user: {
@@ -189,7 +241,20 @@ export const authService = {
         try {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
+            
+            // CHECK: Look up in members table
             const memberData = await ensureMemberProfile(user);
+            
+            if (!memberData) {
+                const isNewUser = (user.metadata.creationTime === user.metadata.lastSignInTime);
+                if (isNewUser) {
+                    // Delete the newly created Auth user to keep it clean
+                    await deleteUser(user);
+                } else {
+                    await signOut(auth);
+                }
+                throw new Error('auth.userNotFound');
+            }
 
             const session = {
                 user: {

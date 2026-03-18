@@ -305,6 +305,7 @@ export const translations = {
         'login.signingIn': 'Signing in...',
         'login.invalidLink': 'Invalid or expired login link.',
         'login.google': 'Sign in with Google',
+        'auth.userNotFound': 'Email not authorized. Please contact an administrator.',
     },
     pt: {
         // Navbar
@@ -612,6 +613,7 @@ export const translations = {
         'login.signingIn': 'Entrando...',
         'login.invalidLink': 'Link de acesso inválido ou expirado.',
         'login.google': 'Entrar com Google',
+        'auth.userNotFound': 'Email não autorizado. Por favor, contate um administrador.',
     },
     es: {
         // Navbar
@@ -917,5 +919,6 @@ export const translations = {
         'login.signingIn': 'Iniciando sesión...',
         'login.invalidLink': 'Link de acceso inválido o expirado.',
         'login.google': 'Iniciar sesión con Google',
+        'auth.userNotFound': 'Correo no autorizado. Por favor, contacte a un administrador.',
     }
 };

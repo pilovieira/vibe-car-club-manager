@@ -51,7 +51,8 @@ const AdminCreateMember = () => {
             // Log operation
             await mockService.createLog({
                 userId: user.id || user.uid,
-                userName: user.name || user.displayName || user.email,
+                userName: user.profile?.name || user.email,
+                userEmail: user.email,
                 description: `Created new member and auth user: ${formData.email}`
             });
 

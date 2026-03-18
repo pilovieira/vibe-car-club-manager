@@ -264,19 +264,27 @@ export const mockService = {
 
     // Logs
     getLogs: async () => {
-        const q = query(collection(db, 'logs'), orderBy('timestamp', 'desc'));
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        try {
+            const q = query(collection(db, 'logs'), orderBy('timestamp', 'desc'));
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        } catch (error) {
+            console.warn('mockService: Failed to fetch sorted logs, falling back to unsorted with in-memory sort:', error);
+            // Fallback: Fetch all logs and sort them in memory
+            const q = query(collection(db, 'logs'));
+            const querySnapshot = await getDocs(q);
+            const logs = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+            return logs.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+        }
     },
 
     createLog: async (log) => {
         const logToInsert = {
-            ...log,
             timestamp: new Date().toISOString(),
-            userId: log.userId,
-            userEmail: log.userEmail,
-            userName: log.userName,
-            description: log.description
+            userId: log.userId || null,
+            userEmail: log.userEmail || null,
+            userName: log.userName || null,
+            description: log.description || ''
         };
         const docRef = await addDoc(collection(db, 'logs'), logToInsert);
         const created = await getDoc(docRef);

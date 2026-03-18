@@ -1,12 +1,15 @@
-import { auth, db } from '../firebase/config';
+import { auth, db, firebaseConfig } from '../firebase/config';
+import { initializeApp, deleteApp } from 'firebase/app';
 import {
+    getAuth,
     signOut,
     onAuthStateChanged,
     sendSignInLinkToEmail,
     isSignInWithEmailLink,
     signInWithEmailLink,
     GoogleAuthProvider,
-    signInWithPopup
+    signInWithPopup,
+    createUserWithEmailAndPassword
 } from 'firebase/auth';
 import {
     doc,
@@ -106,6 +109,27 @@ export const authService = {
                 }
             }
         };
+    },
+
+    createUser: async (email, password) => {
+        console.log('authService: Admin creating user for', email);
+
+        const secondaryApp = initializeApp(firebaseConfig, 'Secondary');
+        const secondaryAuth = getAuth(secondaryApp);
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+            const user = userCredential.user;
+
+            await signOut(secondaryAuth);
+            await deleteApp(secondaryApp);
+            return user;
+        } catch (error) {
+
+            if (secondaryApp) await deleteApp(secondaryApp);
+            console.error('Admin user creation error:', error);
+            throw error;
+        }
     },
 
     getProfile: async (userId) => {

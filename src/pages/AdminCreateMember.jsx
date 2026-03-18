@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
 import { mockService } from '../services/mockData';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -26,7 +27,13 @@ const AdminCreateMember = () => {
         setSuccess('');
 
         try {
+            // 1. Create Auth User with default password
+            const defaultPassword = Date.now().toString();
+            const newAuthUser = await authService.createUser(formData.email.trim(), defaultPassword);
+
+            // 2. Create Member document in Firestore using the Auth User UID
             await mockService.createMember({
+                id: newAuthUser.uid,
                 email: formData.email.trim(),
                 name: formData.name.trim(),
                 username: formData.username.toLowerCase().trim(),
@@ -34,7 +41,7 @@ const AdminCreateMember = () => {
                 role: 'member'
             });
 
-            setSuccess(t('members.memberCreated'));
+            setSuccess(`${t('members.memberCreated')} (Pass: ${defaultPassword})`);
             setFormData({
                 email: '',
                 name: '',
@@ -45,11 +52,13 @@ const AdminCreateMember = () => {
             await mockService.createLog({
                 userId: user.id || user.uid,
                 userName: user.name || user.displayName || user.email,
-                description: `Created new member: ${formData.email}`
+                description: `Created new member and auth user: ${formData.email}`
             });
 
-            setTimeout(() => navigate('/admin'), 2000);
+            setTimeout(() => navigate('/admin'), 3000);
         } catch (err) {
+            // Handle error (e.g., user already exists)
+            console.error('Error creating user:', err);
             setError(err.message);
         } finally {
             setLoading(false);

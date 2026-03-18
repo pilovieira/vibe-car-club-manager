@@ -117,6 +117,9 @@ export const mockService = {
         querySnapshot.forEach(doc => {
             props[doc.id] = doc.data().value;
         });
+        if (!props.event_types) {
+            props.event_types = ['soft trail', 'hard trail', 'members meetup', 'club official meetup'];
+        }
         return props;
     },
 
@@ -171,7 +174,12 @@ export const mockService = {
 
         const docRef = await addDoc(collection(db, 'events'), eventToInsert);
         const created = await getDoc(docRef);
-        return { ...created.data(), id: docRef.id, attendees: [] };
+        return {
+            ...created.data(),
+            id: docRef.id,
+            eventType: created.data().event_type,
+            attendees: []
+        };
     },
 
     updateEvent: async (eventId, event) => {
@@ -188,7 +196,12 @@ export const mockService = {
         const docRef = doc(db, 'events', eventId);
         await updateDoc(docRef, eventToUpdate);
         const updated = await getDoc(docRef);
-        return { ...updated.data(), id: eventId };
+        return {
+            ...updated.data(),
+            id: eventId,
+            eventType: updated.data().event_type,
+            attendees: event.attendees || []
+        };
     },
 
     joinEvent: async (eventId, memberId) => {

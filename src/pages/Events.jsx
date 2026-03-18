@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mockService } from '../services/mockData';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useSettings } from '../context/SettingsContext';
 import { FaImages } from 'react-icons/fa';
 import { parseSafeDate } from '../utils/dateUtils';
 
@@ -10,16 +11,34 @@ const Events = () => {
     const navigate = useNavigate();
     const { user, isAdmin } = useAuth();
     const { t, language } = useLanguage();
+    const { settings } = useSettings();
     const [events, setEvents] = useState([]);
     const [members, setMembers] = useState([]);
     const [dataLoading, setDataLoading] = useState(true);
 
+    // Dynamic Event Types
+    const eventTypes = useMemo(() => {
+        const types = settings.event_types;
+        if (Array.isArray(types) && types.length > 0) {
+            return types.map(t => t.trim()).filter(Boolean);
+        }
+        // Fallback to defaults if not set
+        return ['soft trail', 'hard trail', 'members meetup', 'club official meetup'];
+    }, [settings.event_types]);
+
     // Create Event State
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [editingEventId, setEditingEventId] = useState(null);
-    const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '', description: '', eventType: 'soft trail' });
+    const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '', description: '', eventType: '' });
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+
+    // Initialize eventType with first available
+    useEffect(() => {
+        if (!newEvent.eventType && eventTypes.length > 0) {
+            setNewEvent(prev => ({ ...prev, eventType: eventTypes[0] }));
+        }
+    }, [eventTypes]);
 
     const fetchEventsAndMembers = async () => {
         setDataLoading(true);
@@ -54,12 +73,13 @@ const Events = () => {
                 }
                 setShowCreateForm(false);
                 setEditingEventId(null);
-                setNewEvent({ title: '', date: '', location: '', description: '', eventType: 'soft trail' });
+                setNewEvent({ title: '', date: '', location: '', description: '', eventType: eventTypes[0] || '' });
 
                 // Log operation
                 await mockService.createLog({
                     userId: user.id || user.uid,
-                    userName: user.name || user.displayName || user.email,
+                    userName: user.profile?.name || user.email,
+                    userEmail: user.email,
                     description: `${editingEventId ? 'Updated' : 'Created'} event: ${newEvent.title}`
                 });
             } catch (err) {
@@ -76,7 +96,7 @@ const Events = () => {
             date: event.date,
             location: event.location,
             description: event.description,
-            eventType: event.eventType || 'soft trail'
+            eventType: event.eventType || eventTypes[0] || ''
         });
         setShowCreateForm(true);
     };
@@ -106,7 +126,8 @@ const Events = () => {
                         // Log operation
                         await mockService.createLog({
                             userId: user.id || user.uid,
-                            userName: user.name || user.displayName || user.email,
+                            userName: user.profile?.name || user.email,
+                            userEmail: user.email,
                             description: `Left event: ${event.title}`
                         });
                     }
@@ -122,7 +143,8 @@ const Events = () => {
                     // Log operation
                     await mockService.createLog({
                         userId: user.id || user.uid,
-                        userName: user.name || user.displayName || user.email,
+                        userName: user.profile?.name || user.email,
+                        userEmail: user.email,
                         description: `Joined event: ${event.title}`
                     });
                 }
@@ -166,8 +188,10 @@ const Events = () => {
                         <div className="event-info-header">
                             <h2>{event.title}</h2>
                             <div className="event-badge-row">
-                                <span className={`type-badge ${(event.eventType || 'soft trail').replace(/\s+/g, '-')}`}>
-                                    {t(`events.type.${(event.eventType || 'soft-trail').replace(/\s+/g, '-')}`)}
+                                <span className={`type-badge ${(event.eventType || '').replace(/\s+/g, '-')}`}>
+                                    {t(`events.type.${(event.eventType || '').replace(/\s+/g, '-')}`) !== `events.type.${(event.eventType || '').replace(/\s+/g, '-')}` 
+                                        ? t(`events.type.${(event.eventType || '').replace(/\s+/g, '-')}`) 
+                                        : (event.eventType || '')}
                                 </span>
                             </div>
                         </div>
@@ -313,10 +337,13 @@ const Events = () => {
                                 onChange={e => setNewEvent({ ...newEvent, eventType: e.target.value })}
                                 required
                             >
-                                <option value="soft trail">{t('events.type.soft-trail')}</option>
-                                <option value="hard trail">{t('events.type.hard-trail')}</option>
-                                <option value="members meetup">{t('events.type.members-meetup')}</option>
-                                {isAdmin && <option value="club official meetup">{t('events.type.club-official-meetup')}</option>}
+                                {eventTypes.map(type => (
+                                    <option key={type} value={type}>
+                                        {t(`events.type.${type.replace(/\s+/g, '-')}`) !== `events.type.${type.replace(/\s+/g, '-')}` 
+                                            ? t(`events.type.${type.replace(/\s+/g, '-')}`) 
+                                            : type}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className="form-group">
@@ -574,6 +601,9 @@ const Events = () => {
             font-weight: 800;
             white-space: nowrap;
             letter-spacing: 0.05em;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            border: 1px solid var(--glass-border);
         }
         /* Badge Colors */
         .type-badge.soft-trail { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }

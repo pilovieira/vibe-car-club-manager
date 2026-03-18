@@ -222,6 +222,31 @@ const AdminProperties = () => {
 
                     <div className="setting-item">
                         <div className="setting-info">
+                            <h3>{t('settings.eventTypes') || 'Event Types'}</h3>
+                            <p>{t('settings.eventTypesDesc') || 'Define categories for your events (one per line).'}</p>
+                        </div>
+                        <div className="setting-action" style={{ flex: 1, maxWidth: '500px' }}>
+                            <div className="input-group" style={{ width: '100%' }}>
+                                <textarea
+                                    className="input-field"
+                                    value={Array.isArray(properties.event_types) ? properties.event_types.join('\n') : (properties.event_types || '')}
+                                    onChange={(e) => setProperties({ ...properties, event_types: e.target.value.split('\n') })}
+                                    style={{ width: '100%', minHeight: '100px', textAlign: 'left', padding: '0.75rem', borderRadius: '0.5rem', fontFamily: 'monospace' }}
+                                    placeholder="e.g.\nsoft trail\nhard trail\nmembers meetup"
+                                />
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => handleUpdate('event_types', Array.isArray(properties.event_types) ? properties.event_types : properties.event_types.split('\n'))}
+                                    disabled={saving}
+                                >
+                                    {saving ? t('common.saving') : t('common.save')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="setting-item">
+                        <div className="setting-info">
                             <h3>{t('settings.appTheme')}</h3>
                             <p>{t('settings.appThemeDesc')}</p>
                         </div>

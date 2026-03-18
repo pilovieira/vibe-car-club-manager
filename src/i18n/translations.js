@@ -250,6 +250,8 @@ export const translations = {
         'settings.logoUploaded': 'App logo updated successfully!',
         'settings.homeDesc': 'Home Description',
         'settings.homeDescDesc': 'Description displayed in the home page hero section.',
+        'settings.eventTypes': 'Event Types',
+        'settings.eventTypesDesc': 'Define categories for your events (one per line).',
 
         'settings.noLogo': 'No Logo',
         'settings.theme.mud': 'Mud (Brown)',
@@ -558,6 +560,8 @@ export const translations = {
         'settings.logoUploaded': 'Logo do app atualizado com sucesso!',
         'settings.homeDesc': 'Descrição da Home',
         'settings.homeDescDesc': 'Descrição exibida na seção hero da página inicial.',
+        'settings.eventTypes': 'Tipos de Evento',
+        'settings.eventTypesDesc': 'Defina as categorias para seus eventos (uma por linha).',
 
         'settings.noLogo': 'Sem Logo',
         'settings.theme.mud': 'Lama (Marrom)',
@@ -866,6 +870,8 @@ export const translations = {
         'settings.logoUploaded': '¡Logo del app actualizado con éxito!',
         'settings.homeDesc': 'Descripción de Inicio',
         'settings.homeDescDesc': 'Descripción mostrada en la sección principal de la página de inicio.',
+        'settings.eventTypes': 'Tipos de Evento',
+        'settings.eventTypesDesc': 'Defina las categorías para sus eventos (una por línea).',
 
         'settings.noLogo': 'Sin Logo',
         'settings.theme.mud': 'Barro (Marrón)',

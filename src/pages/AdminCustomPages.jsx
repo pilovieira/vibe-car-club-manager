@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 const AdminCustomPages = () => {
     const { isAdmin, user } = useAuth();
-    const { t, getTranslatedTitle } = useLanguage();
+    const { t } = useLanguage();
     const { customPages, refreshSettings } = useSettings();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingPage, setEditingPage] = useState(null);
@@ -86,7 +86,7 @@ const AdminCustomPages = () => {
     };
 
     const handleDelete = async (pageId, title) => {
-        const displayTitle = getTranslatedTitle(title);
+        const displayTitle = title;
         if (!window.confirm(t('common.confirmDelete') || `Are you sure you want to delete "${displayTitle}"?`)) return;
 
         try {
@@ -130,11 +130,10 @@ const AdminCustomPages = () => {
                                 className="input-field"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                placeholder="e.g. pt:Sobre\nen:About\nes:Sobre"
+                                placeholder="e.g. Terms of Service"
                                 rows={4}
                                 required
                             />
-                            <small className="form-hint">{t('admin.titleHint') || 'Use language:Text pattern or just plain text.'}</small>
                         </div>
                         <div className="form-group">
                             <label>{t('admin.pagePath')}</label>
@@ -173,7 +172,7 @@ const AdminCustomPages = () => {
                         {customPages.map(page => (
                             <div key={page.id} className="card page-card">
                                 <div className="page-info">
-                                    <h3>{getTranslatedTitle(page.title)}</h3>
+                                    <h3>{page.title}</h3>
                                     <p className="page-path">/pages/{page.path}</p>
                                 </div>
                                 <div className="page-actions">

@@ -8,7 +8,7 @@ import { FaGlobe, FaChevronDown } from 'react-icons/fa';
 
 const Navbar = () => {
   const { user, login, logout, isAdmin } = useAuth();
-  const { language, setLanguage, t, getTranslatedTitle } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const { settings, customPages } = useSettings();
   const navigate = useNavigate();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -67,7 +67,7 @@ const Navbar = () => {
             <Link to="/events" className="nav-link" onClick={handleNavClick}>{t('nav.events')}</Link>
             {customPages?.filter(p => p.path !== 'home').map(page => (
               <Link key={page.id} to={`/pages/${page.path}`} className="nav-link" onClick={handleNavClick}>
-                {getTranslatedTitle(page.title)}
+                {page.title}
               </Link>
             ))}
             {isAdmin && <Link to="/admin" className="nav-link admin-link" onClick={handleNavClick}>{t('nav.admin')}</Link>}

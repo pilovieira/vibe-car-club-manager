@@ -8,7 +8,7 @@ import { FaEdit, FaSave, FaSpinner, FaBold, FaItalic, FaListUl, FaListOl, FaLink
 const CustomPage = () => {
     const { path } = useParams();
     const { isAdmin, user } = useAuth();
-    const { t, getTranslatedTitle } = useLanguage();
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const [pageData, setPageData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -246,7 +246,7 @@ const CustomPage = () => {
     return (
         <div className="container custom-page">
             <header className="page-header">
-                <h1 className="page-title">{getTranslatedTitle(pageData.title)}</h1>
+                <h1 className="page-title">{pageData.title}</h1>
                 {isAdmin && (
                     <div className="admin-actions">
                         {!isEditing ? (

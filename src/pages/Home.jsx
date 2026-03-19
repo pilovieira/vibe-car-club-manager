@@ -5,7 +5,7 @@ import GenericLogo from '../components/GenericLogo';
 import { useMemo } from 'react';
 
 const Home = () => {
-  const { t, getTranslatedTitle } = useLanguage();
+  const { t } = useLanguage();
   const { settings, customPages = [] } = useSettings();
 
   const titleParts = (settings.app_title || 'App Title').split(' ');
@@ -15,10 +15,10 @@ const Home = () => {
   const homePageContent = useMemo(() => {
     const homePage = customPages.find(p => p.path === 'home');
     if (homePage) {
-        return getTranslatedTitle(homePage.content);
+        return homePage.content;
     }
     return null;
-  }, [customPages, getTranslatedTitle]);
+  }, [customPages]);
 
   return (
     <div className="home-page">

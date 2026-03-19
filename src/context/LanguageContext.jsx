@@ -44,39 +44,11 @@ export const LanguageProvider = ({ children }) => {
         });
     };
 
-    const getTranslatedTitle = (rawTitle) => {
-        if (!rawTitle || typeof rawTitle !== 'string') return rawTitle || '';
-
-        // Multi-language pattern: pt:Title\nen:Title\nes:Title
-        const validLangs = ['en', 'pt', 'es'];
-        const lines = rawTitle.split('\n');
-        const langMap = {};
-        let hasPattern = false;
-
-        lines.forEach(line => {
-            const separatorIndex = line.indexOf(':');
-            if (separatorIndex !== -1) {
-                const prefix = line.substring(0, separatorIndex).trim().toLowerCase();
-                const content = line.substring(separatorIndex + 1).trim();
-                if (validLangs.includes(prefix)) {
-                    langMap[prefix] = content;
-                    hasPattern = true;
-                }
-            }
-        });
-
-        if (!hasPattern) return rawTitle;
-
-        // Try current language, fallback to en, then pt, then es, then original
-        return langMap[language] || langMap['en'] || langMap['pt'] || langMap['es'] || rawTitle;
-    };
-
     const value = {
         language,
         setLanguage,
         toggleLanguage,
-        t,
-        getTranslatedTitle
+        t
     };
 
     return (

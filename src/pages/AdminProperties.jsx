@@ -161,20 +161,6 @@ const AdminProperties = () => {
                         </div>
                     </div>
 
-                    <div className="setting-item">
-                        <div className="setting-info">
-                            <h3>{t('settings.homeDesc')}</h3>
-                            <p>{t('settings.homeDescDesc')}</p>
-                        </div>
-                        <div className="setting-action" style={{ flex: 1, maxWidth: '500px' }}>
-                            <textarea
-                                className="input-field"
-                                value={properties.home_description || ''}
-                                onChange={(e) => setProperties({ ...properties, home_description: e.target.value })}
-                                style={{ width: '100%', minHeight: '80px', textAlign: 'left', padding: '0.75rem', borderRadius: '0.5rem' }}
-                            />
-                        </div>
-                    </div>
 
                     <div className="setting-item">
                         <div className="setting-info">

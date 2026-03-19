@@ -2,14 +2,23 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useSettings } from '../context/SettingsContext';
 import GenericLogo from '../components/GenericLogo';
+import { useMemo } from 'react';
 
 const Home = () => {
-  const { t } = useLanguage();
-  const { settings } = useSettings();
+  const { t, getTranslatedTitle } = useLanguage();
+  const { settings, customPages = [] } = useSettings();
 
-  const titleParts = settings.app_title.split(' ');
+  const titleParts = (settings.app_title || 'App Title').split(' ');
   const firstPart = titleParts[0];
   const secondPart = titleParts.slice(1).join(' ');
+
+  const homePageContent = useMemo(() => {
+    const homePage = customPages.find(p => p.path === 'home');
+    if (homePage) {
+        return getTranslatedTitle(homePage.content);
+    }
+    return null;
+  }, [customPages, getTranslatedTitle]);
 
   return (
     <div className="home-page">
@@ -23,9 +32,20 @@ const Home = () => {
             )}
           </div>
           <h1 className="hero-title">{firstPart} <span className="text-gradient">{secondPart}</span>.</h1>
-          <p className="hero-subtitle">
-            {settings.home_description}
-          </p>
+          
+          <div className="hero-custom-content">
+            {homePageContent ? (
+                <div 
+                    className="home-injected-page" 
+                    dangerouslySetInnerHTML={{ __html: homePageContent }}
+                />
+            ) : (
+                <p className="hero-subtitle">
+                    {settings.home_description}
+                </p>
+            )}
+          </div>
+
           <div className="hero-buttons">
             <Link to="/members" className="btn btn-primary hero-btn">{t('home.exploreMembers')}</Link>
             <Link to="/events" className="btn btn-outline hero-btn">{t('home.upcomingEvents')}</Link>
@@ -47,7 +67,7 @@ const Home = () => {
           font-size: 4rem;
           font-weight: 800;
           line-height: 1.1;
-          margin-bottom: 1.5rem;
+          margin-bottom: 2rem;
           letter-spacing: -0.02em;
         }
         .text-gradient {
@@ -55,11 +75,24 @@ const Home = () => {
           font-weight: 900;
           text-shadow: 0 0 20px var(--primary-shadow);
         }
+        .hero-custom-content {
+          margin-bottom: 3rem;
+          display: flex;
+          justify-content: center;
+          width: 100%;
+        }
+        .home-injected-page {
+            text-align: left;
+            width: 100%;
+            max-width: 800px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
         .hero-subtitle {
           font-size: 1.25rem;
           color: var(--text-secondary);
           max-width: 600px;
-          margin: 0 auto 2.5rem;
+          margin: 0 auto;
         }
         .hero-buttons {
           display: flex;

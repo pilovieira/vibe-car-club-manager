@@ -65,7 +65,7 @@ const Navbar = () => {
           <div className="nav-links">
             <Link to="/members" className="nav-link" onClick={handleNavClick}>{t('nav.members')}</Link>
             <Link to="/events" className="nav-link" onClick={handleNavClick}>{t('nav.events')}</Link>
-            {customPages?.filter(p => isAdmin || p.path !== 'home').map(page => (
+            {customPages?.filter(p => p.path !== 'home').map(page => (
               <Link key={page.id} to={`/pages/${page.path}`} className="nav-link" onClick={handleNavClick}>
                 {getTranslatedTitle(page.title)}
               </Link>

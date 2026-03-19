@@ -109,6 +109,9 @@ export const translations = {
         'events.deleteSuccess': 'Photo deleted successfully!',
         'events.maxSize': 'Max size',
         'events.backToEvents': 'Back to Events',
+        'events.visibility': 'Visibility',
+        'events.public': 'Public (Everyone)',
+        'events.private': 'Private (Members only)',
 
         // Admin Dashboard
         'admin.title': 'Admin Dashboard',
@@ -248,8 +251,6 @@ export const translations = {
         'settings.appLogo': 'App Logo',
         'settings.appLogoDesc': 'Upload a custom logo to be displayed in the navbar.',
         'settings.logoUploaded': 'App logo updated successfully!',
-        'settings.homeDesc': 'Home Description',
-        'settings.homeDescDesc': 'Description displayed in the home page hero section.',
         'settings.appLanguage': 'App Language',
         'settings.appLanguageDesc': 'Set the fixed language for the entire application for all users.',
         'settings.eventTypes': 'Event Types',
@@ -280,6 +281,7 @@ export const translations = {
         'common.close': 'Close',
         'common.clear': 'Clear',
         'common.upload': 'Upload',
+        'common.saveAll': 'Save All Changes',
 
 
 
@@ -421,6 +423,9 @@ export const translations = {
         'events.deleteSuccess': 'Foto excluída com sucesso!',
         'events.maxSize': 'Tamanho máx.',
         'events.backToEvents': 'Voltar para Eventos',
+        'events.visibility': 'Visibilidade',
+        'events.public': 'Público (Todos)',
+        'events.private': 'Privado (Apenas Membros)',
 
         // Admin Dashboard
         'admin.title': 'Painel Administrativo',
@@ -560,8 +565,6 @@ export const translations = {
         'settings.appLogo': 'Logo do App',
         'settings.appLogoDesc': 'Carregue um logo personalizado para ser exibido na barra de navegação.',
         'settings.logoUploaded': 'Logo do app atualizado com sucesso!',
-        'settings.homeDesc': 'Descrição da Home',
-        'settings.homeDescDesc': 'Descrição exibida na seção hero da página inicial.',
         'settings.appLanguage': 'Idioma do App',
         'settings.appLanguageDesc': 'Define o idioma fixo para toda a aplicação para todos os usuários.',
         'settings.eventTypes': 'Tipos de Evento',
@@ -592,6 +595,7 @@ export const translations = {
         'common.close': 'Fechar',
         'common.clear': 'Limpar',
         'common.upload': 'Carregar',
+        'common.saveAll': 'Salvar Todas as Alterações',
 
 
 
@@ -733,6 +737,9 @@ export const translations = {
         'events.deleteSuccess': '¡Foto eliminada con éxito!',
         'events.maxSize': 'Tamaño máx.',
         'events.backToEvents': 'Volver a Eventos',
+        'events.visibility': 'Visibilidad',
+        'events.public': 'Público (Todos)',
+        'events.private': 'Privado (Solo Miembros)',
 
         // Admin Dashboard
         'admin.title': 'Panel de Administración',
@@ -872,8 +879,6 @@ export const translations = {
         'settings.appLogo': 'Logo del App',
         'settings.appLogoDesc': 'Sube un logo personalizado para mostrar en la barra de navegación.',
         'settings.logoUploaded': '¡Logo del app actualizado con éxito!',
-        'settings.homeDesc': 'Descripción de Inicio',
-        'settings.homeDescDesc': 'Descripción mostrada en la sección principal de la página de inicio.',
         'settings.appLanguage': 'Idioma del App',
         'settings.appLanguageDesc': 'Define el idioma fijo para toda la aplicación para todos los usuarios.',
         'settings.eventTypes': 'Tipos de Evento',
@@ -904,6 +909,7 @@ export const translations = {
         'common.close': 'Cerrar',
         'common.clear': 'Limpiar',
         'common.upload': 'Subir',
+        'common.saveAll': 'Guardar Todos los Cambios',
 
         // Gender & Roles
         'gender.label': 'Género',

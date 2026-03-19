@@ -4,7 +4,7 @@ import { mockService } from '../services/mockData';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useSettings } from '../context/SettingsContext';
-import { FaImages } from 'react-icons/fa';
+import { FaImages, FaLock, FaGlobe } from 'react-icons/fa';
 import { parseSafeDate } from '../utils/dateUtils';
 
 const Events = () => {
@@ -29,7 +29,14 @@ const Events = () => {
     // Create Event State
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [editingEventId, setEditingEventId] = useState(null);
-    const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '', description: '', eventType: '' });
+    const [newEvent, setNewEvent] = useState({ 
+        title: '', 
+        date: '', 
+        location: '', 
+        description: '', 
+        eventType: '',
+        visibility: 'private' // default
+    });
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
@@ -73,7 +80,7 @@ const Events = () => {
                 }
                 setShowCreateForm(false);
                 setEditingEventId(null);
-                setNewEvent({ title: '', date: '', location: '', description: '', eventType: eventTypes[0] || '' });
+                setNewEvent({ title: '', date: '', location: '', description: '', eventType: eventTypes[0] || '', visibility: 'private' });
 
                 // Log operation
                 await mockService.createLog({
@@ -96,7 +103,8 @@ const Events = () => {
             date: event.date,
             location: event.location,
             description: event.description,
-            eventType: event.eventType || eventTypes[0] || ''
+            eventType: event.eventType || eventTypes[0] || '',
+            visibility: event.visibility || 'private'
         });
         setShowCreateForm(true);
     };
@@ -186,7 +194,18 @@ const Events = () => {
                     </div>
                     <div className="event-body">
                         <div className="event-info-header">
-                            <h2>{event.title}</h2>
+                            <div className="title-row">
+                                <h2>{event.title}</h2>
+                                {event.visibility === 'public' ? (
+                                    <span className="visibility-badge public" title={t('events.public')}>
+                                        <FaGlobe />
+                                    </span>
+                                ) : (
+                                    <span className="visibility-badge private" title={t('events.private')}>
+                                        <FaLock />
+                                    </span>
+                                )}
+                            </div>
                             <div className="event-badge-row">
                                 <span className={`type-badge ${(event.eventType || '').replace(/\s+/g, '-')}`}>
                                     {t(`events.type.${(event.eventType || '').replace(/\s+/g, '-')}`) !== `events.type.${(event.eventType || '').replace(/\s+/g, '-')}` 
@@ -221,36 +240,40 @@ const Events = () => {
 
                 <div className="event-footer-actions">
                     {user ? (
-                        <button
-                            className={`action-btn join-btn ${isAttending(event) ? 'attending' : ''} ${parseSafeDate(event.date) < new Date() ? 'disabled' : ''}`}
-                            onClick={() => handleToggleEvent(event.id)}
-                            disabled={parseSafeDate(event.date) < new Date() || (user.status === 'inactive' && !isAttending(event))}
-                        >
-                            {parseSafeDate(event.date) < new Date()
-                                ? t('events.ended')
-                                : isAttending(event)
-                                    ? t('events.leave')
-                                    : (user.status === 'inactive' ? t('events.inactiveWarning') : t('events.join'))}
-                        </button>
+                        <>
+                            <button
+                                className={`action-btn join-btn ${isAttending(event) ? 'attending' : ''} ${parseSafeDate(event.date) < new Date() ? 'disabled' : ''}`}
+                                onClick={() => handleToggleEvent(event.id)}
+                                disabled={parseSafeDate(event.date) < new Date() || (user.status === 'inactive' && !isAttending(event))}
+                            >
+                                {parseSafeDate(event.date) < new Date()
+                                    ? t('events.ended')
+                                    : isAttending(event)
+                                        ? t('events.leave')
+                                        : (user.status === 'inactive' ? t('events.inactiveWarning') : t('events.join'))}
+                            </button>
+                            <button
+                                className="action-btn gallery-btn"
+                                onClick={() => navigate(`/events/${event.id}/gallery`)}
+                            >
+                                <FaImages /> <span>{t('events.gallery')}</span>
+                            </button>
+                            {(isAdmin || (user && event.createdBy === (user.id || user.uid))) && (
+                                <button
+                                    className="action-btn edit-btn"
+                                    onClick={() => handleStartEdit(event)}
+                                >
+                                    <span>✏️ {t('common.edit')}</span>
+                                </button>
+                            )}
+                        </>
                     ) : (
-                        <button className="action-btn join-btn disabled" disabled>{t('nav.login')}</button>
-                    )}
-
-                    {user && (
                         <button
                             className="action-btn gallery-btn"
                             onClick={() => navigate(`/events/${event.id}/gallery`)}
+                            style={{ flex: 1 }}
                         >
                             <FaImages /> <span>{t('events.gallery')}</span>
-                        </button>
-                    )}
-
-                    {(isAdmin || (user && event.createdBy === (user.id || user.uid))) && (
-                        <button
-                            className="action-btn edit-btn"
-                            onClick={() => handleStartEdit(event)}
-                        >
-                            <span>✏️ {t('common.edit')}</span>
                         </button>
                     )}
                 </div>
@@ -258,7 +281,15 @@ const Events = () => {
         </div>
     );
 
-    const filteredEvents = events.filter(event => {
+    // Initial Filter: If not logged in, only public events
+    const initialFilteredByVisibility = useMemo(() => {
+        if (!user) {
+            return events.filter(e => e.visibility === 'public');
+        }
+        return events;
+    }, [events, user]);
+
+    const filteredEvents = initialFilteredByVisibility.filter(event => {
         const eventDate = parseSafeDate(event.date);
         if (startDate && eventDate < new Date(startDate + 'T00:00:00')) return false;
         if (endDate && eventDate > new Date(endDate + 'T23:59:59')) return false;
@@ -329,22 +360,36 @@ const Events = () => {
                                 <input className="input-field" value={newEvent.location} onChange={e => setNewEvent({ ...newEvent, location: e.target.value })} required />
                             </div>
                         </div>
-                        <div className="form-group">
-                            <label>{t('events.type')}</label>
-                            <select
-                                className="input-field"
-                                value={newEvent.eventType}
-                                onChange={e => setNewEvent({ ...newEvent, eventType: e.target.value })}
-                                required
-                            >
-                                {eventTypes.map(type => (
-                                    <option key={type} value={type}>
-                                        {t(`events.type.${type.replace(/\s+/g, '-')}`) !== `events.type.${type.replace(/\s+/g, '-')}` 
-                                            ? t(`events.type.${type.replace(/\s+/g, '-')}`) 
-                                            : type}
-                                    </option>
-                                ))}
-                            </select>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>{t('events.type')}</label>
+                                <select
+                                    className="input-field"
+                                    value={newEvent.eventType}
+                                    onChange={e => setNewEvent({ ...newEvent, eventType: e.target.value })}
+                                    required
+                                >
+                                    {eventTypes.map(type => (
+                                        <option key={type} value={type}>
+                                            {t(`events.type.${type.replace(/\s+/g, '-')}`) !== `events.type.${type.replace(/\s+/g, '-')}` 
+                                                ? t(`events.type.${type.replace(/\s+/g, '-')}`) 
+                                                : type}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>{t('events.visibility') || 'Visibility'}</label>
+                                <select
+                                    className="input-field"
+                                    value={newEvent.visibility}
+                                    onChange={e => setNewEvent({ ...newEvent, visibility: e.target.value })}
+                                    required
+                                >
+                                    <option value="private">{t('events.private') || 'Private (Members only)'}</option>
+                                    <option value="public">{t('events.public') || 'Public (Everyone)'}</option>
+                                </select>
+                            </div>
                         </div>
                         <div className="form-group">
                             <label>{t('events.description')}</label>
@@ -584,8 +629,11 @@ const Events = () => {
         .event-info-header {
             margin-bottom: 0.75rem;
         }
-        .event-badge-row {
-            margin-top: 0.25rem;
+        .title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
         }
         .event-body h2 {
             font-size: 1.5rem;
@@ -593,6 +641,20 @@ const Events = () => {
             margin: 0;
             line-height: 1.2;
         }
+        .visibility-badge {
+            font-size: 0.9rem;
+            opacity: 0.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            width: 30px;
+            height: 30px;
+        }
+        .visibility-badge.public { color: #10b981; }
+        .visibility-badge.private { color: #3b82f6; }
+
         .type-badge {
             font-size: 0.65rem;
             padding: 0.25rem 0.75rem;

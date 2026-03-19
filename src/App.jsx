@@ -53,12 +53,14 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
 
+          {/* Public & Member Routes */}
+          <Route path="events" element={<Events />} />
+          <Route path="events/:eventId/gallery" element={<EventGallery />} />
+
           {/* Member & Event Routes (Logged users only) */}
           <Route element={<ProtectedRoute />}>
             <Route path="members" element={<Members />} />
             <Route path="members/:id" element={<MemberProfile />} />
-            <Route path="events" element={<Events />} />
-            <Route path="events/:eventId/gallery" element={<EventGallery />} />
           </Route>
 
           {/* Admin Routes */}

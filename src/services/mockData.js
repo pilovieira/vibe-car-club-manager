@@ -1,4 +1,4 @@
-import { db, storage } from '../firebase/config';
+import { db, storage, auth } from '../firebase/config';
 import {
     collection,
     getDocs,
@@ -151,7 +151,14 @@ export const mockService = {
 
     // Events
     getEvents: async () => {
-        const eventsRef = collection(db, 'events');
+        const { query, where } = await import('firebase/firestore');
+        let eventsRef = collection(db, 'events');
+        
+        // If not logged in, only fetch public events (to satisfy security rules)
+        if (!auth.currentUser) {
+            eventsRef = query(eventsRef, where('visibility', '==', 'public'));
+        }
+        
         const querySnapshot = await getDocs(eventsRef);
 
         const events = await Promise.all(querySnapshot.docs.map(async (eventDoc) => {
@@ -168,6 +175,7 @@ export const mockService = {
                 id: eventDoc.id,
                 eventType: eventData.event_type,
                 createdBy: eventData.created_by,
+                visibility: eventData.visibility || 'private',
                 attendees: attendees
             };
         }));

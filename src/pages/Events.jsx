@@ -4,7 +4,7 @@ import { mockService } from '../services/mockData';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useSettings } from '../context/SettingsContext';
-import { FaImages, FaLock, FaGlobe } from 'react-icons/fa';
+import { FaImages, FaLock, FaGlobe, FaUsers, FaTimes } from 'react-icons/fa';
 import { parseSafeDate } from '../utils/dateUtils';
 
 const Events = () => {
@@ -39,6 +39,10 @@ const Events = () => {
     });
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+
+    // Modal state for attendees
+    const [showAttendeesModal, setShowAttendeesModal] = useState(false);
+    const [modalEvent, setModalEvent] = useState(null);
 
     // Initialize eventType with first available
     useEffect(() => {
@@ -171,6 +175,11 @@ const Events = () => {
         return attendeeIds.map(id => members.find(m => m.id === id)).filter(Boolean);
     };
 
+    const handleShowAttendees = (event) => {
+        setModalEvent(event);
+        setShowAttendeesModal(true);
+    };
+
     const renderEventCard = (event) => (
         <div key={event.id} className="event-card-wrapper animate-fade-in">
             <div className={`event-card shadow-sm event-type-${(event.eventType || '').replace(/\s+/g, '-')}`}>
@@ -218,7 +227,18 @@ const Events = () => {
                         <p className="event-desc">{event.description}</p>
 
                         <div className="attendees-section">
-                            <span className="attendees-label">{t('events.attendees')} ({event.attendees.length})</span>
+                            <div className="attendees-header-row">
+                                <span className="attendees-label">{t('events.attendees')} ({event.attendees.length})</span>
+                                {event.attendees.length > 0 && (
+                                    <button 
+                                        className="btn-show-all" 
+                                        onClick={() => handleShowAttendees(event)}
+                                        title={t('events.showAllAttendees') || "Show all joined members"}
+                                    >
+                                        <FaUsers /> {t('common.view') || "View"}
+                                    </button>
+                                )}
+                            </div>
                             <div className="attendee-list">
                                 {event.attendees.length === 0 ? (
                                     <span className="no-attendees">{t('events.beFirst')}</span>
@@ -441,7 +461,157 @@ const Events = () => {
                 )}
             </div>
 
+            {/* Attendees Modal */}
+            {showAttendeesModal && modalEvent && (
+                <div className="modal-overlay" onClick={() => setShowAttendeesModal(false)}>
+                    <div className="modal-content card animate-fade-in" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>{t('events.attendees')} - {modalEvent.title}</h3>
+                            <button className="btn-close" onClick={() => setShowAttendeesModal(false)}>
+                                <FaTimes />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="attendees-detailed-list">
+                                {getAttendeeDetails(modalEvent.attendees).map(member => (
+                                    <div 
+                                        key={member.id} 
+                                        className="attendee-item"
+                                        onClick={() => {
+                                            setShowAttendeesModal(false);
+                                            navigate(`/members/${member.id}`);
+                                        }}
+                                    >
+                                        <img src={member.avatar} alt={member.name} className="attendee-avatar-md" />
+                                        <div className="attendee-info">
+                                            <span className="attendee-name">{member.name}</span>
+                                            <span className="attendee-role">{member.role}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <style>{`
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            width: 100%;
+            max-width: 450px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 0;
+        }
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+        .btn-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+        .btn-close:hover {
+            color: var(--text-primary);
+        }
+        .modal-body {
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        .attendees-detailed-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .attendee-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .attendee-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .attendee-avatar-md {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid var(--glass-border);
+            object-fit: cover;
+        }
+        .attendee-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .attendee-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .attendee-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: capitalize;
+        }
+        
+        .attendees-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        .btn-show-all {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .btn-show-all:hover {
+            background: var(--primary-glow);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
         .create-event-form {
             max-width: 600px;
             margin-bottom: 2rem;
@@ -689,8 +859,7 @@ const Events = () => {
         }
         .attendees-section {
             display: flex;
-            align-items: center;
-            gap: 1rem;
+            flex-direction: column;
             padding-top: 1rem;
             border-top: 1px solid var(--glass-border);
         }
@@ -833,14 +1002,12 @@ const Events = () => {
             .event-body h2 {
                 font-size: 1.25rem;
             }
-            .attendees-section {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.75rem;
-            }
             .action-btn {
                 padding: 0.75rem;
                 font-size: 0.8rem;
+            }
+            .modal-content {
+                max-width: 90vw;
             }
         }
       `}</style>

@@ -112,6 +112,7 @@ export const translations = {
         'events.visibility': 'Visibility',
         'events.public': 'Public (Everyone)',
         'events.private': 'Private (Members only)',
+        'events.showAllAttendees': 'See List',
 
         // Admin Dashboard
         'admin.title': 'Admin Dashboard',
@@ -281,6 +282,7 @@ export const translations = {
         'common.close': 'Close',
         'common.clear': 'Clear',
         'common.upload': 'Upload',
+        'common.view': 'View',
         'common.saveAll': 'Save All Changes',
 
 
@@ -426,6 +428,7 @@ export const translations = {
         'events.visibility': 'Visibilidade',
         'events.public': 'Público (Todos)',
         'events.private': 'Privado (Apenas Membros)',
+        'events.showAllAttendees': 'Ver Lista',
 
         // Admin Dashboard
         'admin.title': 'Painel Administrativo',
@@ -595,6 +598,7 @@ export const translations = {
         'common.close': 'Fechar',
         'common.clear': 'Limpar',
         'common.upload': 'Carregar',
+        'common.view': 'Ver',
         'common.saveAll': 'Salvar Todas as Alterações',
 
 
@@ -740,6 +744,7 @@ export const translations = {
         'events.visibility': 'Visibilidad',
         'events.public': 'Público (Todos)',
         'events.private': 'Privado (Solo Miembros)',
+        'events.showAllAttendees': 'Ver Lista',
 
         // Admin Dashboard
         'admin.title': 'Panel de Administración',
@@ -909,6 +914,7 @@ export const translations = {
         'common.close': 'Cerrar',
         'common.clear': 'Limpiar',
         'common.upload': 'Subir',
+        'common.view': 'Ver',
         'common.saveAll': 'Guardar Todos los Cambios',
 
         // Gender & Roles

@@ -227,18 +227,7 @@ const Events = () => {
                         <p className="event-desc">{event.description}</p>
 
                         <div className="attendees-section">
-                            <div className="attendees-header-row">
-                                <span className="attendees-label">{t('events.attendees')} ({event.attendees.length})</span>
-                                {event.attendees.length > 0 && (
-                                    <button 
-                                        className="btn-show-all" 
-                                        onClick={() => handleShowAttendees(event)}
-                                        title={t('events.showAllAttendees') || "Show all joined members"}
-                                    >
-                                        <FaUsers /> {t('common.view') || "View"}
-                                    </button>
-                                )}
-                            </div>
+                            <span className="attendees-label">{t('events.attendees')} ({event.attendees.length})</span>
                             <div className="attendee-list">
                                 {event.attendees.length === 0 ? (
                                     <span className="no-attendees">{t('events.beFirst')}</span>
@@ -286,15 +275,32 @@ const Events = () => {
                                     <span>✏️ {t('common.edit')}</span>
                                 </button>
                             )}
+                            {event.attendees.length > 0 && (
+                                <button
+                                    className="action-btn view-attendees-btn"
+                                    onClick={() => handleShowAttendees(event)}
+                                >
+                                    <FaUsers /> <span>{t('events.showAllAttendees')}</span>
+                                </button>
+                            )}
                         </>
                     ) : (
-                        <button
-                            className="action-btn gallery-btn"
-                            onClick={() => navigate(`/events/${event.id}/gallery`)}
-                            style={{ flex: 1 }}
-                        >
-                            <FaImages /> <span>{t('events.gallery')}</span>
-                        </button>
+                        <>
+                            <button
+                                className="action-btn gallery-btn"
+                                onClick={() => navigate(`/events/${event.id}/gallery`)}
+                            >
+                                <FaImages /> <span>{t('events.gallery')}</span>
+                            </button>
+                            {event.attendees.length > 0 && (
+                                <button
+                                    className="action-btn view-attendees-btn"
+                                    onClick={() => handleShowAttendees(event)}
+                                >
+                                    <FaUsers /> <span>{t('events.showAllAttendees')}</span>
+                                </button>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
@@ -584,37 +590,11 @@ const Events = () => {
             text-transform: capitalize;
         }
         
-        .attendees-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 0.5rem;
-        }
-        .btn-show-all {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            color: var(--text-secondary);
-            font-size: 0.7rem;
-            padding: 0.3rem 0.6rem;
-            border-radius: 0.4rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-        .btn-show-all:hover {
-            background: var(--primary-glow);
-            color: var(--primary);
-            border-color: var(--primary);
-        }
 
         .create-event-form {
-            max-width: 600px;
-            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-bottom: 2.5rem;
+            padding: 2.5rem;
         }
         .form-group {
             margin-bottom: 1rem;
@@ -671,7 +651,8 @@ const Events = () => {
         .events-list {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 2rem;
+            width: 100%;
         }
         .event-card {
             display: flex;
@@ -736,12 +717,13 @@ const Events = () => {
         }
         .event-card {
             background: var(--bg-card);
-            border-radius: 1rem;
+            border-radius: 1.25rem;
             border: 1px solid var(--glass-border);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             position: relative;
+            width: 100%;
         }
         .event-card-wrapper:hover .event-card {
             border-color: var(--primary);
@@ -749,8 +731,8 @@ const Events = () => {
         }
         .event-card-content {
             display: flex;
-            padding: 1.5rem;
-            gap: 1.5rem;
+            padding: 2rem;
+            gap: 2rem;
         }
         .event-date {
             min-width: 80px;
@@ -802,14 +784,17 @@ const Events = () => {
         .title-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
+            align-items: flex-start;
+            gap: 1.5rem;
+            width: 100%;
         }
         .event-body h2 {
-            font-size: 1.5rem;
+            flex: 1;
+            font-size: 1.75rem;
             font-weight: 700;
             margin: 0;
             line-height: 1.2;
+            word-break: break-word;
         }
         .visibility-badge {
             font-size: 0.9rem;
@@ -951,6 +936,7 @@ const Events = () => {
             color: var(--text-secondary);
         }
         
+        .view-attendees-btn:hover { color: var(--primary); }
         .gallery-btn:hover { color: var(--accent); }
         .edit-btn:hover { color: var(--accent); }
 
